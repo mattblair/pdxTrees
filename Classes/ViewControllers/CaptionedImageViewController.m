@@ -1,6 +1,6 @@
 //
 //  CaptionedImageViewController.m
-//  pdxTreesCD
+//  pdxTrees
 //
 //  Created by Matt Blair on 10/2/10.
 // 
@@ -54,8 +54,8 @@
 
 - (id)initWithImage:(UIImage *)image caption:(NSString *)caption {
 
-	
-	if (self = [super initWithNibName:@"CaptionedImageViewController" bundle:nil]) {
+	// why are you specifying the nibname here? this shouldn't even be a VC, just a View?!
+	if ((self = [super initWithNibName:@"CaptionedImageViewController" bundle:nil])) { 
 			
 		// set the image
 		self.thePhoto = image;

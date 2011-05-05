@@ -1,6 +1,6 @@
 //
 //  MapViewController.m
-//  pdxTreesCD
+//  pdxTrees
 //
 //  Created by Matt Blair on 9/18/10.
 // 
@@ -97,7 +97,7 @@
 	 North bounding coordinate      45.82618832
 	 South bounding coordinate      44.85462409 
 	 
-	 That yields a center of: 
+	 That yields a center of:
 	 
 	 Latitude: 45.340406
 	 Longitude: -122.56087

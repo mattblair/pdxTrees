@@ -1,6 +1,6 @@
 //
 //  pdxTreesCDAppDelegate.h
-//  pdxTreesCD
+//  pdxTrees
 //
 //  Created by Matt Blair on 9/17/10.
 //  Copyright (c) 2010 Elsewise LLC

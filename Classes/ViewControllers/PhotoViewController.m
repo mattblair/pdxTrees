@@ -1,6 +1,6 @@
 //
 //  PhotoViewController.m
-//  pdxTreesCD
+//  pdxTrees
 //
 //  Created by Matt Blair on 10/2/10.
 // 

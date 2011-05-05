@@ -1,6 +1,6 @@
 //
 //  ImageSubmitViewController.h
-//  pdxTreesCD
+//  pdxTrees
 //
 //  Created by Matt Blair on 9/20/10.
 // 
