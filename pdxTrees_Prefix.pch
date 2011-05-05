@@ -1,5 +1,5 @@
 //
-// Prefix header for all source files of the 'pdxTreesCD' target in the 'pdxTreesCD' project
+// Prefix header for all source files of the 'pdxTrees' target in the 'pdxTrees' project
 //
 
 #import <Availability.h>

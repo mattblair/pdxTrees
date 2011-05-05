@@ -1,6 +1,6 @@
 //
 //  main.m
-//  pdxTreesCD
+//  pdxTrees
 //
 //  Created by Matt Blair on 9/17/10.
 // 
