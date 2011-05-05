@@ -1,0 +1,366 @@
+[
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7eeb02a5", 
+        "_rev": "1-7f8ec56d1d9a3e3d8add2dc39d2d0ed1", 
+        "address": "7688 SW CAPITOL HWY", 
+        "circumfere": "5.500000000000000", 
+        "common_nam": "Cryptomeria", 
+        "diameter": "21", 
+        "geometry": {
+            "coordinates": [
+                -122.71074344476899, 
+                45.468422628780402
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "49", 
+        "height": "60", 
+        "notes": "Multnomah Arts Center, south side between SW 33rd Ave and SW 34th Ave", 
+        "objectid": "49", 
+        "owner": "Portland Parks & Recreation", 
+        "scientific": "Cryptomeria japonica", 
+        "spread": "24", 
+        "stateid": "1S1E20DB  5600", 
+        "status": "Heritage", 
+        "treeid": "52", 
+        "year": "1995"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7eea4095", 
+        "_rev": "1-d0d4e7f4df4e4a6da3732193412edbb5", 
+        "address": "4620 SW 29TH PL", 
+        "circumfere": "16.000000000000000", 
+        "common_nam": "Oregon white oak", 
+        "diameter": "61", 
+        "geometry": {
+            "coordinates": [
+                -122.707409042216, 
+                45.489429414801897
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "71", 
+        "height": "60", 
+        "notes": "east side, north of SW Sunset Blvd", 
+        "objectid": "71", 
+        "owner": "Barbarn Courson", 
+        "scientific": "Quercus garryana", 
+        "spread": "100", 
+        "stateid": "1S1E17AA  6000", 
+        "status": "Heritage", 
+        "treeid": "75", 
+        "year": "1996"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee999b4", 
+        "_rev": "1-821cb6a322f5c36640b51087022e733c", 
+        "address": "4534 SW 60TH PL", 
+        "circumfere": "15.300000000000001", 
+        "common_nam": "American elm", 
+        "diameter": "58", 
+        "geometry": {
+            "coordinates": [
+                -122.73940201408099, 
+                45.490129145636402
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "92", 
+        "height": "45", 
+        "notes": "east side south of SW Hamilton St", 
+        "objectid": "92", 
+        "owner": "Mr. & Mrs. Lee Miesen", 
+        "scientific": "Ulmus X hollandica 'Vegeta'", 
+        "spread": "90", 
+        "stateid": "1S1E18BB  200", 
+        "status": "Heritage", 
+        "treeid": "102", 
+        "year": "1996"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee8ec15", 
+        "_rev": "1-7fe3252e33c29b99792e907823982184", 
+        "address": "6125 SW BOUNDARY ST", 
+        "circumfere": "14.500000000000000", 
+        "common_nam": "Smoothleaf elm", 
+        "diameter": "55", 
+        "geometry": {
+            "coordinates": [
+                -122.74014906334, 
+                45.4859096703521
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "110", 
+        "height": "92", 
+        "notes": "north side between SW 62nd Ave and SW 58th Ave", 
+        "objectid": "110", 
+        "owner": "Robison Jewish Home", 
+        "scientific": "Ulmus minor", 
+        "spread": "110", 
+        "stateid": "1S1E18BC  300", 
+        "status": "Heritage", 
+        "treeid": "120", 
+        "year": "1996"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee8a620", 
+        "_rev": "1-48a87e006674c82e97e41a7ea0001853", 
+        "address": "1032 SW TAYLORS FERRY RD", 
+        "circumfere": "7.800000000000000", 
+        "common_nam": "Oriental planetree", 
+        "diameter": "30", 
+        "geometry": {
+            "coordinates": [
+                -122.689095425736, 
+                45.463017226786498
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "118", 
+        "height": "66", 
+        "notes": "south side between SW 11th Ave and SW 10th Ave", 
+        "objectid": "118", 
+        "owner": "Jim & Hildy Kelly", 
+        "scientific": "Platanus orientalis", 
+        "spread": "47", 
+        "stateid": "1S1E21DC  9500", 
+        "status": "Heritage", 
+        "treeid": "129", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee8a0c6", 
+        "_rev": "1-adb6e74bc6c0f61d1bc5791a2c0c344e", 
+        "address": "4504 SW SHATTUCK RD", 
+        "circumfere": "16.100000000000001", 
+        "common_nam": "Ponderosa pine", 
+        "diameter": "61", 
+        "geometry": {
+            "coordinates": [
+                -122.72898377625501, 
+                45.490626244978898
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "119", 
+        "height": "85", 
+        "notes": "east side south of SW Hamilton St", 
+        "objectid": "119", 
+        "owner": "Roger Hancock", 
+        "scientific": "Pinus ponderosa", 
+        "spread": "48", 
+        "stateid": "1S1E18AB  100", 
+        "status": "Heritage", 
+        "treeid": "130", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee85e5e", 
+        "_rev": "1-e9cafeee915f5d7301138be834f9b5dc", 
+        "address": "4825 SW DOSCH PARK LN", 
+        "circumfere": "10.400000000000000", 
+        "common_nam": "Ponderosa pine", 
+        "diameter": "40", 
+        "geometry": {
+            "coordinates": [
+                -122.706633317756, 
+                45.487534725206999
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "126", 
+        "height": "100", 
+        "notes": "west side between SW Dosch Rd and SW Campbell Ct", 
+        "objectid": "126", 
+        "owner": "James Drisoll", 
+        "scientific": "Pinus ponderosa", 
+        "spread": "44", 
+        "stateid": "1S1E17AA  7600", 
+        "status": "Heritage", 
+        "treeid": "139", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee85939", 
+        "_rev": "1-b5e1c9e08f8335a5b21678997ad523e1", 
+        "address": "4825 SW DOSCH PARK LN", 
+        "circumfere": "10.400000000000000", 
+        "common_nam": "Ponderosa pine", 
+        "diameter": "40", 
+        "geometry": {
+            "coordinates": [
+                -122.706692017303, 
+                45.487553609801203
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "127", 
+        "height": "100", 
+        "notes": "west side between SW Dosch Rd and SW Campbell Ct", 
+        "objectid": "127", 
+        "owner": "James Drisoll", 
+        "scientific": "Pinus ponderosa", 
+        "spread": "44", 
+        "stateid": "1S1E17AA  7600", 
+        "status": "Heritage", 
+        "treeid": "140", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee85686", 
+        "_rev": "1-7ab39587f375a34abb182262b7cbc1d0", 
+        "address": "4825 SW DOSCH PARK LN", 
+        "circumfere": "12.199999999999999", 
+        "common_nam": "Oregon white oak", 
+        "diameter": "47", 
+        "geometry": {
+            "coordinates": [
+                -122.707238218935, 
+                45.487584906781002
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "128", 
+        "height": "96", 
+        "notes": "west side between SW Dosch Rd and SW Campbell Ct", 
+        "objectid": "128", 
+        "owner": "James Drisoll", 
+        "scientific": "Quercus garryana", 
+        "spread": "82", 
+        "stateid": "1S1E17AA  7600", 
+        "status": "Heritage", 
+        "treeid": "141", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee848b7", 
+        "_rev": "1-00d012afd56ef6d794efe0a11c8737cc", 
+        "address": "4825 SW DOSCH PARK LN", 
+        "circumfere": "12.199999999999999", 
+        "common_nam": "Oregon white oak", 
+        "diameter": "47", 
+        "geometry": {
+            "coordinates": [
+                -122.70699528198899, 
+                45.487586187802798
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "129", 
+        "height": "96", 
+        "notes": "west side between SW Dosch Rd and SW Campbell Ct", 
+        "objectid": "129", 
+        "owner": "James Drisoll", 
+        "scientific": "Quercus garryana", 
+        "spread": "82", 
+        "stateid": "1S1E17AA  7600", 
+        "status": "Heritage", 
+        "treeid": "142", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee8464f", 
+        "_rev": "1-a469a734c2f335a808e12ada6aa330f7", 
+        "address": "4825 SW DOSCH PARK LN", 
+        "circumfere": "12.199999999999999", 
+        "common_nam": "Oregon white oak", 
+        "diameter": "47", 
+        "geometry": {
+            "coordinates": [
+                -122.706683801469, 
+                45.487286912905901
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "130", 
+        "height": "96", 
+        "notes": "west side between SW Dosch Rd and SW Campbell Ct", 
+        "objectid": "130", 
+        "owner": "James Drisoll", 
+        "scientific": "Quercus garryana", 
+        "spread": "82", 
+        "stateid": "1S1E17AA  7600", 
+        "status": "Heritage", 
+        "treeid": "143", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee842a7", 
+        "_rev": "1-7c217503d814f10ba98c9bb6280d8eb1", 
+        "address": "4825 SW DOSCH PARK LN", 
+        "circumfere": "7.700000000000000", 
+        "common_nam": "Eastern white pine", 
+        "diameter": "29", 
+        "geometry": {
+            "coordinates": [
+                -122.706626751359, 
+                45.487423330957697
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "131", 
+        "height": "70", 
+        "notes": "west side between SW Dosch Rd and SW Campbell Ct", 
+        "objectid": "131", 
+        "owner": "James Drisoll", 
+        "scientific": "Pinus strobus", 
+        "spread": "60", 
+        "stateid": "1S1E17AA  7600", 
+        "status": "Heritage", 
+        "treeid": "144", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee832b9", 
+        "_rev": "1-898b614e842913cf37483ddd555b8739", 
+        "address": "4825 SW DOSCH PARK LN", 
+        "circumfere": "8.400000000000000", 
+        "common_nam": "Western redcedar", 
+        "diameter": "32", 
+        "geometry": {
+            "coordinates": [
+                -122.70652450563701, 
+                45.487408920091603
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "132", 
+        "height": "83", 
+        "notes": "west side between SW Dosch Rd and SW Campbell Ct", 
+        "objectid": "132", 
+        "owner": "James Drisoll", 
+        "scientific": "Thuja plicata", 
+        "spread": "63", 
+        "stateid": "1S1E17AA  7600", 
+        "status": "Heritage", 
+        "treeid": "145", 
+        "year": "1997"
+    }, 
+    {
+        "_id": "df5d405a5afaba4b77b89cfd7ee82fc9", 
+        "_rev": "1-1c81621bdf13118482c981700bd24b68", 
+        "address": "4825 SW DOSCH PARK LN", 
+        "circumfere": "9.699999999999999", 
+        "common_nam": "Incense cedar", 
+        "diameter": "37", 
+        "geometry": {
+            "coordinates": [
+                -122.70714866052801, 
+                45.487430503642102
+            ], 
+            "type": "Point"
+        }, 
+        "gid": "133", 
+        "height": "96", 
+        "notes": "west side between SW Dosch Rd and SW Campbell Ct", 
+        "objectid": "133", 
+        "owner": "James Drisoll", 
+        "scientific": "Calocedrus decurrens", 
+        "spread": "25", 
+        "stateid": "1S1E17AA  7600", 
+        "status": "Heritage", 
+        "treeid": "146", 
+        "year": "1997"
+    }
+]
