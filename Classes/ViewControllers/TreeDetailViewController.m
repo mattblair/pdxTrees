@@ -184,6 +184,8 @@
 	photoVC.treeName = [[self tree] commonName];
 	
 	// Future: set page number based on which image is tapped
+    
+    photoVC.photoRequestedIndex = [sender tag]; // each button tag set in XIB
 	
 	// push it onto the nav stack
 	
@@ -711,7 +713,7 @@
 				// process the array of dictionaries
 				
 				// for looking at the format of the dictionary returned
-				// NSLog(@"first dictionary item in temp: %@", [tempImageList objectAtIndex:0]);
+				NSLog(@"first dictionary item in temp tree image list: %@", [tempImageList objectAtIndex:0]);
 				
 				self.treeImageList = tempImageList;
 				

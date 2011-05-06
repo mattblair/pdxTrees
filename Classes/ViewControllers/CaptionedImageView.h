@@ -1,10 +1,9 @@
 //
-//  CaptionedImageViewController.h
+//  CaptionedImageView.h
 //  pdxTrees
 //
-//  Created by Matt Blair on 10/2/10.
-// 
-//  Copyright (c) 2010 Elsewise LLC
+//  Created by Matt Blair on 5/5/11.
+//  Copyright 2011 Elsewise LLC. 
 // 
 //  Source available under: 
 // 
@@ -29,32 +28,37 @@
 //  THE SOFTWARE.
 // 
 //  For more information: http://pdxtrees.org
-//
-//
+////
 
 #import <UIKit/UIKit.h>
 
 
-@interface CaptionedImageViewController : UIViewController {
+@interface CaptionedImageView : UIView {
+ 
+    // Data -- or don't be a purist, and just write to UI Objects?!
 	
-	// Data
-	
-	UIImage *thePhoto;
-	NSString *captionString;
+	//UIImage *thePhoto;
+	//NSString *captionString;
+    NSUInteger index;
 	
 	
 	// UI
 	UILabel *captionLabel;
 	UIImageView *imageView;
-
+    
 }
 
-@property(nonatomic,retain) UIImage *thePhoto;
-@property(nonatomic,retain) NSString *captionString;
+//@property(nonatomic,retain) UIImage *thePhoto;
+//@property(nonatomic,retain) NSString *captionString;
+
+@property (assign) NSUInteger index;
 
 @property(nonatomic,retain) IBOutlet UILabel *captionLabel;
 @property(nonatomic,retain) IBOutlet UIImageView *imageView;
 
-- (id)initWithImage:(UIImage *)image caption:(NSString *)caption;
+// replace display with init?
+//- (id)initWithImage:(UIImage *)image caption:(NSString *)caption;
+
+- (void)displayImage:(UIImage *)image withCaption:(NSString *)caption andCredit:(NSString *)credit;
 
 @end

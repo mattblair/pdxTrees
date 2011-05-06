@@ -35,14 +35,12 @@
 
 @class ASIHTTPRequest;
 @class ASINetworkQueue;
-
-// based on PageControl sample code
+@class CaptionedImageView;
 
 
 @interface PhotoViewController : UIViewController <UIScrollViewDelegate, MFMailComposeViewControllerDelegate> {
 
 	// data
-
 	NSMutableArray *treeImageList;	
 	NSMutableArray *treeThumbnails;
 	NSMutableArray *photoArray;
@@ -50,22 +48,21 @@
 	
 	NSNumber *treeID;
 	NSString *treeName;
+    
+    NSMutableSet *recycledPhotos;
+    NSMutableSet *visiblePhotos;
 	
 	// UI
 	
-	UIWindow *window;
 	UIScrollView *scrollView;
 	UIPageControl *pageControl;
-    NSMutableArray *viewControllers;
-	
-	
 	
 	// Control
 	
-	// To be used when scrolls originate from the UIPageControl
+	// To be used when changes originate from the UIPageControl
     BOOL pageControlUsed;
 	
-	int pagenumber; // for landing on a particular one
+	NSInteger photoRequestedIndex; // for landing on a particular page
 	
 	// the request objects
 	ASIHTTPRequest *flagRequest;
@@ -82,16 +79,21 @@
 @property (nonatomic, retain) NSNumber *treeID;
 @property (nonatomic, retain) NSString *treeName;
 
+@property (nonatomic) NSInteger photoRequestedIndex;
+
 // UI
-@property (nonatomic, retain) IBOutlet UIWindow *window;
 @property (nonatomic, retain) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, retain) IBOutlet UIPageControl *pageControl;
-@property (nonatomic, retain) NSMutableArray *viewControllers;
 
 @property(retain) ASIHTTPRequest *flagRequest;
 @property(retain) ASINetworkQueue *imageRequestQueue;
 
 - (IBAction)changePage:(id)sender;
+
+- (void)updatePhotosForScrollViewPosition;
+- (CaptionedImageView *)dequeueRecycledPhoto;
+- (BOOL)isDisplayingPhotoForIndex:(NSUInteger)index;
+
 
 - (void)flagPhotoByEmail;
 

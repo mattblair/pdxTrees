@@ -33,15 +33,12 @@
 
 #import <MessageUI/MessageUI.h>  // for email
 #import "PhotoViewController.h"
-#import "CaptionedImageViewController.h"
 #import "ASIHTTPRequest.h"
 #import "ASINetworkQueue.h"
 #import "Reachability.h"
 #import "TreeDetailViewController.h"
 #import "RESTConstants.h"  // for access to URLs
-
-// based on PageControl sample code
-
+#import "CaptionedImageView.h"
 
 @interface PhotoViewController (PrivateMethods)
 
@@ -52,8 +49,9 @@
 
 @implementation PhotoViewController
 
-@synthesize window, scrollView, pageControl, viewControllers, flagRequest, imageRequestQueue;
+@synthesize scrollView, pageControl, flagRequest, imageRequestQueue;
 @synthesize treeImageList, treeThumbnails, photoArray, treePhotosReceived, treeID, treeName;
+@synthesize photoRequestedIndex;
 
 
 #pragma mark -
@@ -140,18 +138,12 @@
 	
 	// get count of photos
 	NSUInteger pageCount = [[self photoArray] count];
-	
-	
+    
+    // sets to hold the views
+    recycledPhotos = [[NSMutableSet alloc] init];
+    visiblePhotos  = [[NSMutableSet alloc] init];
 
-	// Array of nulls; view controllers are created lazily
-    // in the meantime, load the array with placeholders which will be replaced on demand
-    NSMutableArray *controllers = [[NSMutableArray alloc] init];
-    for (unsigned i = 0; i < pageCount; i++) {
-        [controllers addObject:[NSNull null]];
-    }
-    self.viewControllers = controllers;
-    [controllers release];
-	
+    
 	// Configuring the scrollView
 	
 	// a page is the width of the scroll view
@@ -163,39 +155,53 @@
     scrollView.delegate = self;
 	
 	pageControl.numberOfPages = pageCount;
-    pageControl.currentPage = 0;
+    
+    
+    // pre-fetch images before and after requested photo
 	
-	// pre-fetch images before this point
+	/*
+     // Load first two pages of scroll view
+     
+     [self loadScrollViewWithPage:0];
+     [self loadScrollViewWithPage:1];
+     */
+    
+    // if 0, function will return immediately on -1
+    //[self updateScrollViewAtPage:self.photoRequestedIndex];
+    
+    self.pageControl.currentPage = self.photoRequestedIndex;
 	
-	
-	// Load first two pages of scroll view
-	
-	[self loadScrollViewWithPage:0];
-    [self loadScrollViewWithPage:1];
-	
+    // need to load images and scroll to the currentPage
+    
+    [self changePage:self];
+     
 	// add flag button and connect to its selector
 
-	UIBarButtonItem *flagButton = [[[UIBarButtonItem alloc] initWithTitle:@"Flag"  
+	UIBarButtonItem *flagButton = [[UIBarButtonItem alloc] initWithTitle:@"Flag"  
 																	style:UIBarButtonItemStyleBordered 
 																   target:self
-																   action:@selector(flagPhoto:)] autorelease];
+																   action:@selector(flagPhoto:)];
 	
 	self.navigationItem.rightBarButtonItem = flagButton;
 
-	// set the title
+    [flagButton release];
+    
 	self.navigationItem.title = [self treeName];
-	
 	
 }
 
 
 -(void)viewWillDisappear:(BOOL)animated {
 	
+    // 110505: this should go away once image load is handed off, right?
+    
 	// this gets called just after viewDidLoad, when the Captioned Image VC takes over, and again when the user taps back to return to TDVC
 	// Only kill the queue when headed back to the TDVC
 
-	// NSLog(@"Photo VC viewWillDisappear: class of top view controller is %@", [[[self navigationController] topViewController] class]);
+	NSLog(@"Photo VC viewWillDisappear: class of top view controller is %@", [[[self navigationController] topViewController] class]);
 	
+    /*
+    
 	if ([[[self navigationController] topViewController] isKindOfClass:[TreeDetailViewController class]]) {
 
 		// check on the flag request
@@ -212,42 +218,11 @@
 		[self killQueue];
 		
 	}
-	
+	*/
 }
-
-
-- (void)loadScrollViewWithPage:(int)page {
-	
-    if (page < 0) return;
-    if (page >= [[self photoArray] count]) return;
-	
-    // replace the placeholder if necessary
-    CaptionedImageViewController *controller = [viewControllers objectAtIndex:page];
-    if ((NSNull *)controller == [NSNull null]) {
-		
-		
-		NSString *pageCaption = [[treeImageList objectAtIndex:page] objectForKey:@"caption"];
-        controller = [[CaptionedImageViewController alloc] initWithImage:[photoArray objectAtIndex:page] 
-																 caption:pageCaption];
-        [viewControllers replaceObjectAtIndex:page withObject:controller];
-        [controller release];
-    }
-	
-    // add the controller's view to the scroll view
-    if (nil == controller.view.superview) {
-        CGRect frame = scrollView.frame;
-        frame.origin.x = frame.size.width * page;
-        frame.origin.y = 0;
-        controller.view.frame = frame;
-        [scrollView addSubview:controller.view];
-    }
-}
-
 
 #pragma mark -
 #pragma mark ScrollView Delegate Methods
-
-// see PageControl sample code for more details
 
 - (void)scrollViewDidScroll:(UIScrollView *)sender {
     // To prevent "feedback loop" between the UIPageControl and the scroll delegate
@@ -259,15 +234,30 @@
 	
     // Switch the indicator when more than 50% of the previous/next page is visible
     CGFloat pageWidth = scrollView.frame.size.width;
-    int page = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-    pageControl.currentPage = page;
+    
+    // these next two lines cause multiple events
+    //int page = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
+    //self.pageControl.currentPage = page;
 	
+    // this borrows from PoEd Browse Controller to only call for update on actual change
+    int newPage = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
+    
+    if ((newPage >= 0) && !(newPage == self.pageControl.currentPage)) {
+        self.pageControl.currentPage = newPage;
+        
+        NSLog(@"scrolling triggering an update");
+        [self updatePhotosForScrollViewPosition];
+        
+    }    
+    
+    /*
     // load the visible page and the page on either side of it (to avoid flashes when the user starts scrolling)
     [self loadScrollViewWithPage:page - 1];
     [self loadScrollViewWithPage:page];
     [self loadScrollViewWithPage:page + 1];
-	
-    // A possible optimization would be to unload the views+controllers which are no longer visible
+     
+    */
+
 }
 
 // At the begin of scroll dragging, reset the boolean used when scrolls originate from the UIPageControl
@@ -280,21 +270,125 @@
     pageControlUsed = NO;
 }
 
+#pragma mark - Managing photos in Scroll View
+
+// formerly known as - (void)loadScrollViewWithPage:(int)page
+- (void)configurePhoto:(CaptionedImageView *)capView forIndex:(int)page { 
+    
+    // bounds check -- get rid of this and check elsewhere?
+    if (page < 0) return;
+    if (page >= [[self photoArray] count]) return;
+    
+    
+    NSString *pageCaption = [[treeImageList objectAtIndex:page] objectForKey:@"caption"];
+    
+    capView.index = page;
+    
+    // page = index -- rename the argument in the method to make it clearer?
+    [capView displayImage:[photoArray objectAtIndex:page] withCaption:pageCaption andCredit:@"TBD"];
+    
+    CGRect frame = scrollView.frame;
+    frame.origin.x = frame.size.width * page;
+    frame.origin.y = 0;
+    capView.frame = frame;
+        
+}
+
+- (void)updatePhotosForScrollViewPosition {  // this is like the tilePages method of PhotoScroller
+    
+    NSInteger page = self.pageControl.currentPage;
+    
+
+    int firstPhotoNeeded = page - 1;
+    int lastPhotoNeeded = page + 1;
+    
+    // bounds handling from tilePages
+    firstPhotoNeeded = MAX(firstPhotoNeeded, 0); // i.e. filter out negative
+    lastPhotoNeeded  = MIN(lastPhotoNeeded, [[self photoArray] count] - 1);
+    
+    
+    NSLog(@"Current views needed are indexes: %d %d %d", firstPhotoNeeded, page, lastPhotoNeeded);
+    
+    // loop through visible pages set: if index is < page -1 or > page + 1
+    // add to recycled and remove from superview
+    
+    for (CaptionedImageView *capView in visiblePhotos) {
+        
+        
+        
+        if (capView.index < firstPhotoNeeded || capView.index > lastPhotoNeeded) {
+            NSLog(@"capView index %d will be recycled", capView.index);
+            [recycledPhotos addObject:capView];
+            [capView removeFromSuperview];
+        }
+        else {
+            NSLog(@"capView index %d WILL NOT BE recycled", capView.index);
+        }
+    }
+    
+    [visiblePhotos minusSet:recycledPhotos];
+    
+    NSLog(@"Visible v. Recycle Photo #'s: %d to %d", [visiblePhotos count], [recycledPhotos count]);
+    
+    for (int index = firstPhotoNeeded; index <= lastPhotoNeeded; index++) {
+        if (![self isDisplayingPhotoForIndex:index]) {
+            CaptionedImageView *capView = [self dequeueRecycledPhoto];
+            if (capView == nil) {
+                capView = [[[CaptionedImageView alloc] init] autorelease];
+            }
+            //[self configurePage:page forIndex:index];
+            [self configurePhoto:capView forIndex:page];
+            [self.scrollView addSubview:capView];
+            [visiblePhotos addObject:capView];
+        }
+    } 
+    
+    // this was working, but it never recycles, it just keeps drawing:
+    /*
+    [self loadScrollViewWithPage:page - 1];
+    [self loadScrollViewWithPage:page];
+    [self loadScrollViewWithPage:page + 1];
+    */
+}
+
+- (CaptionedImageView *)dequeueRecycledPhoto {
+    CaptionedImageView *capView = [recycledPhotos anyObject];
+    if (capView) {
+        [[capView retain] autorelease];
+        [recycledPhotos removeObject:capView];
+        
+    }
+    return capView;
+}
+
+- (BOOL)isDisplayingPhotoForIndex:(NSUInteger)index {
+    BOOL foundPhoto = NO;
+    for (CaptionedImageView *capView in visiblePhotos) {
+        if (capView.index == index) {
+            NSLog(@"found photo for index %d", capView.index);
+            foundPhoto = YES;
+            break;
+        }
+        else {
+            NSLog(@"No photo for index %d", capView.index);
+        }
+    }
+    return foundPhoto;
+}
+
 #pragma mark -
 #pragma mark User-initated Actions
 
 
 - (IBAction)changePage:(id)sender {
-    int page = pageControl.currentPage;
-	
-    // load the visible page and the page on either side of it (to avoid flashes when the user starts scrolling)
-    [self loadScrollViewWithPage:page - 1];
-    [self loadScrollViewWithPage:page];
-    [self loadScrollViewWithPage:page + 1];
+   
+    NSLog(@"changePage triggering an update");
+    
+    [self updatePhotosForScrollViewPosition];
     
 	// update the scroll view to the appropriate page
     CGRect frame = scrollView.frame;
-    frame.origin.x = frame.size.width * page;
+    frame.origin.x = frame.size.width * self.pageControl.currentPage;
     frame.origin.y = 0;
     [scrollView scrollRectToVisible:frame animated:YES];
     
@@ -636,16 +730,17 @@
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
+    
+    self.scrollView = nil;
+    self.pageControl = nil;
+    
 }
 
 
 - (void)dealloc {
 	
-	
-	[viewControllers release];
     [scrollView release];
     [pageControl release];
-    [window release];
 	
 	[treeImageList release];
 	[treeThumbnails release];

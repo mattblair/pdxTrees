@@ -46,7 +46,7 @@
 					<object class="IBUIScrollView" id="1073078807">
 						<reference key="NSNextResponder" ref="362709843"/>
 						<int key="NSvFlags">256</int>
-						<string key="NSFrameSize">{320, 360}</string>
+						<string key="NSFrameSize">{320, 380}</string>
 						<reference key="NSSuperview" ref="362709843"/>
 						<reference key="NSWindow"/>
 						<bool key="IBUIClipsSubviews">YES</bool>
@@ -221,13 +221,11 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>pageControl</string>
 							<string>scrollView</string>
-							<string>window</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>UIPageControl</string>
 							<string>UIScrollView</string>
-							<string>UIWindow</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
@@ -236,7 +234,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>pageControl</string>
 							<string>scrollView</string>
-							<string>window</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -247,10 +244,6 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">scrollView</string>
 								<string key="candidateClassName">UIScrollView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">window</string>
-								<string key="candidateClassName">UIWindow</string>
 							</object>
 						</object>
 					</object>

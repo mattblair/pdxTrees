@@ -39,7 +39,7 @@
 @class ASIHTTPRequest;
 @class ASINetworkQueue;
 
-
+// added UINavigationControllerDelegate to surpress warning from UIImagePicker
 @interface TreeDetailViewController : UIViewController <MFMailComposeViewControllerDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, ImageSubmitDelegate, UINavigationControllerDelegate> { 
 
 	// Data
