@@ -39,11 +39,16 @@
 #import "Reachability.h"
 #import "RESTConstants.h"  // for access to URLs
 
+// added for Couch submissions
+#import "ASIHTTPRequest.h" 
+#import "NSObject+SBJSON.h"
+#import "NSString+SBJSON.h"
 
 @implementation ImageSubmitViewController
 
 @synthesize captionTextField, nameTextField, emailTextField, currentTextField, theImageView, ccExplainerLabel; //urlTextField
 @synthesize tree, localPhotoPath, cancelButton, saveButton, submittingSpinner, delegate, imageSubmitRequest;
+@synthesize sentToCouch;
 
 
 #pragma mark -
@@ -96,7 +101,7 @@
 	}
 	/*
 	else {
-		NSLog(@"Fields not remembered.");  //else statement for troubleshooting only -- can delete
+		NSLog(@"Fields not remembered.");  //else statement for testing only -- can delete
 	}
 	*/
 
@@ -134,8 +139,6 @@
 	if (status == kReachableViaWiFi || status == kReachableViaWWAN) { 
 	
 
-		// Observe the kNetworkReachabilityChangedNotification. When that notification is posted, the
-		// method "reachabilityChanged" will be called. 
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachabilityChanged:) name: kReachabilityChangedNotification object: nil];
 		
 		internetReach = [[Reachability reachabilityForInternetConnection] retain];
@@ -149,15 +152,13 @@
 		
 		NSString *authPostURL = [NSString stringWithFormat:@"http://%@:%@@%@", kAPIUsername,kAPIPassword,kAPIHostAndPath];
 		
-		// confirmation code:
+		// a peek at the URL
 		NSLog(@"Generated URL is: %@", authPostURL);
 		
 		NSURL *url = [NSURL URLWithString:authPostURL];	
 
 		
 		self.imageSubmitRequest = [ASIFormDataRequest requestWithURL:url];
-		
-		// changed from request to [self imageSubmitRequest] so that cancel can stop it
 		
 		[[self imageSubmitRequest] setRequestMethod:@"POST"];
 		
@@ -170,9 +171,6 @@
 			//NSString *nullPhotoPath = [[NSBundle mainBundle] pathForResource:@"null-placeholder320.jpg" ofType:nil];
 			
 			// device code:
-			
-			
-			NSLog(@"Adding photo path");
 			
 			// need to slice up path and file name: 
 			
@@ -301,8 +299,6 @@
 
 - (void)submitPhotoByEmail {
 	
-	// NSLog(@"Begin submitPhotoByEmail method. About to check if mail is configured.");
-	
 	if ([MFMailComposeViewController canSendMail]) {  //verify that mail is configured on the device
 			
 		
@@ -340,14 +336,10 @@
 		else {
 			nameString = @"Submitter name: None";
 		}
-		 
 
-		// no need to add email since this will be sent by email...or should it be here if different?
+		// no need to add email since this will be sent by email...
+        // ...or should it be added here if different from system? probably not worth the checking...
 		 
-		 
-		 
-		// Assemble the email:
-	
 		
 		MFMailComposeViewController *mailVC = [[MFMailComposeViewController alloc] init];
 		
@@ -422,13 +414,14 @@
 	
 	if ([request responseStatusCode] == 200) {
 		
-		// return to detail view, where they will see an alert view about success
+		// return to detail view, which will display an alert view about success
 		[delegate imageSubmitViewControllerDidFinish:self withSubmission:YES];
 		
 	}
 	
 	else {
-		// handle the error by offering email:
+		
+        // handle the error by offering email:
 		
 		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Server Problem" 
 														message:@"Sorry, the server didn't respond as expected. We'll fix that as soon as we can. Would you like to send the image by email instead?" 
@@ -439,7 +432,8 @@
 		[alert release];
 		
 	}
-
+    
+    self.imageSubmitRequest = nil;
 	
 }
 
@@ -457,7 +451,9 @@
 	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {  // not an error
 		NSLog(@"Cancellation initiated by Reachability notification or directly by user.");
 		
-		// Keep this here in case  design changs. Cancel button has its own call to this, as does No to email Alert View
+		// Keep this here in case design changse. 
+        // Cancel button has its own call to this, as does No to email Alert View
+        
 		// return to TDVC for notification (was at bottom of method)
 		//[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO];
 		
@@ -478,6 +474,8 @@
 		[alert release];
 	}
 	
+    self.imageSubmitRequest = nil;
+    
 }
 
 
@@ -487,14 +485,130 @@
 
 		// NSLog(@"Request is in progress, about to cancel.");		
 		
-		[[self imageSubmitRequest] cancel];
+		[[self imageSubmitRequest] cancel];  // does this always call requestFailed?
 
 		// NSLog(@"Request cancelled.");
 		
 		[submittingSpinner stopAnimating];
+        
+        
+        // not needed if the cancel calls requestFailed, nor if it has already succeeded failed, because it won't be in progress anymore? Confirm this.
+        self.imageSubmitRequest = nil; 
 		
 	}
 	
+}
+
+#pragma mark - Migrating to Couch
+
+- (IBAction)submitPhotoMetadataToCouch:(id)sender {
+    
+    // testing basic functionality first, then will port over the real stuff later
+    
+    NSURL *theURL = [NSURL URLWithString:kCouchURLForPhotoSubmission];
+    
+    ASIHTTPRequest *photoSubmitRequest = [ASIHTTPRequest requestWithURL:theURL];
+    
+    [photoSubmitRequest setRequestMethod:@"POST"];
+    
+    [photoSubmitRequest addRequestHeader:@"Content-Type" value:@"application/json"];
+    
+    // put some crap in there for now
+    
+    NSDictionary *photoMetadataDict = [NSDictionary dictionaryWithObject:@"some crap" forKey:@"from-iOS"];
+    
+    NSString *jsonToSubmit = [photoMetadataDict JSONRepresentation];
+    
+    [photoSubmitRequest appendPostData:[jsonToSubmit dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    [photoSubmitRequest setDelegate:self];
+    
+    [photoSubmitRequest setDidFinishSelector:@selector(couchMetadataPOSTRequestFinished:)];
+    
+    [photoSubmitRequest setDidFailSelector:@selector(couchMetadataPOSTRequestFailed:)];
+                                                       
+    [photoSubmitRequest startAsynchronous];
+    
+}
+
+- (void)couchMetadataPOSTRequestFinished:(ASIHTTPRequest *)request {
+    
+    // NSString *responseString = [request responseString];
+	NSLog(@"The Metadata POST HTTP Status code was: %d", [request responseStatusCode]);
+	NSLog(@"The Metadata POST response was: %@", [request responseString]);
+    
+    // status should be 201 (Created) and responseString should be JSON
+    
+    // The Image Submit response was: 
+    // {"ok":true,"id":"bc623d29a6a3694544afa0d84f00da43","rev":"1-5ee7119822cb7faec5dcafdf326e8378"}
+
+    // parse id and rev to assembler url to submit photo
+    
+    NSDictionary *metadataResponse = [[request responseString] JSONValue];
+    
+    //  http://elsewise.iriscouch.com/mydb/<doc.id>/filename.jpg?rev=<doc.rev>
+    
+    NSString *urlString = [NSString stringWithFormat:@"%@/%@/%@?rev=%@", 
+                           kCouchURLForPhotoSubmission, 
+                           [metadataResponse objectForKey:@"id"],
+                           @"testfile.jpg", // see code above to actually get the name
+                           [metadataResponse objectForKey:@"rev"]];
+    
+    NSLog(@"Assembled URL for submitting the photo is: %@", urlString);
+    
+    NSURL *imagePUTURL = [NSURL URLWithString:urlString];
+    
+    ASIHTTPRequest *imagePUTRequest = [ASIHTTPRequest requestWithURL:imagePUTURL];
+    
+    [imagePUTRequest setRequestMethod:@"PUT"];
+    
+    [imagePUTRequest addRequestHeader:@"Content-Type" value:@"image/jpeg"];
+    
+    // add image as data binary
+    
+    NSString *nullPhotoPath = [[NSBundle mainBundle] pathForResource:@"null-placeholder320.jpg" ofType:nil];
+    
+    //[imagePUTRequest appendPostDataFromFile:nullPhotoPath];
+    
+    [imagePUTRequest setPostBodyFilePath:nullPhotoPath];
+    
+    [imagePUTRequest setShouldStreamPostDataFromDisk:YES];
+    
+    [imagePUTRequest setDelegate:self];
+    
+    [imagePUTRequest setDidFinishSelector:@selector(couchImagePUTRequestFinished:)];
+    
+    [imagePUTRequest setDidFailSelector:@selector(couchImagePUTRequestFailed:)];
+    
+    [imagePUTRequest startAsynchronous];
+    
+}
+
+- (void)couchMetadataPOSTRequestFailed:(ASIHTTPRequest *)request {
+    
+    NSLog(@"The Metadata POST HTTP Status code was: %d", [request responseStatusCode]);
+	NSLog(@"The Metadata POST response was: %@", [request responseString]);
+    
+    // if you don't even get this far, offer email
+    
+    
+}
+
+- (void)couchImagePUTRequestFinished:(ASIHTTPRequest *)request {
+    
+    //
+    NSLog(@"The Image Submit PUT HTTP Status code was: %d", [request responseStatusCode]);
+	NSLog(@"The Image Submit PUT response was: %@", [request responseString]);
+    
+}
+
+
+- (void)couchImagePUTRequestFailed:(ASIHTTPRequest *)request {
+    
+    //
+    NSLog(@"The Image Submit PUT HTTP Status code was: %d", [request responseStatusCode]);
+	NSLog(@"The Image Submit PUT response was: %@", [request responseString]);
+    
 }
 
 
@@ -534,9 +648,9 @@
 	
 	if ([[alertView title] isEqual:@"Thank You"]) {
 		
-		// dismiss the image submit VC
+		// dismiss the image submit VC, without confirmation from tdvc
 		
-		[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO];  // return no so they don't get a confirmation from tdvc
+		[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO]; 
 		
 	}
 	
@@ -552,7 +666,7 @@
 		}
 		else {
 			
-			// request has already been cancelled, so just close this
+			// request has already been cancelled, so just close this VC
 			
 			// NSLog(@"User chose cancel on send by email alert view.");
 			[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO];
@@ -654,7 +768,7 @@
 		
 	// load image
 	
-	theImageView.image = [UIImage imageWithContentsOfFile:localPhotoPath];
+	self.theImageView.image = [UIImage imageWithContentsOfFile:self.localPhotoPath];
 	
 	// re-populate the name and email fields
 	
@@ -663,17 +777,22 @@
 	NSString *storedEmail = [[NSUserDefaults standardUserDefaults] stringForKey:@"emailAddress"];
 	
 	if ([storedName length] > 0) {
-		nameTextField.text = storedName;
+		self.nameTextField.text = storedName;
 	}
 	
 	if ([storedEmail length] > 0) {
-		emailTextField.text = storedEmail;
+		self.emailTextField.text = storedEmail;
 	}
 	
 	
 	// set creative commons description
 	
-	ccExplainerLabel.text = @"We use the Creative Commons Attribution-Share-Alike license for all submitted photos. You can learn more about it at creativecommons.org.";
+	self.ccExplainerLabel.text = @"We use the Creative Commons Attribution-Share-Alike license for all submitted photos. You can learn more about it at creativecommons.org.";
+    
+    
+    // testing couch
+    [self submitPhotoMetadataToCouch:self];
+    
 }
 
 
@@ -709,7 +828,17 @@
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
 	
-	// NSLog(@"About to remove self as an observer");
+	self.captionTextField = nil;
+    self.nameTextField = nil;
+    self.emailTextField = nil;
+    self.currentTextField = nil;
+    
+    self.ccExplainerLabel = nil;
+    self.theImageView = nil;
+    
+    self.cancelButton = nil;
+    self.saveButton = nil;
+    self.submittingSpinner = nil;
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
@@ -722,10 +851,8 @@
 	[captionTextField release];
 	[nameTextField release];
 	[emailTextField release];
-	//[urlTextField release];
 	[currentTextField release];
 	
-	//[theTextField release];
 	[ccExplainerLabel release];
 	[theImageView release];
 	

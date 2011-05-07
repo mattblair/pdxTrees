@@ -71,9 +71,11 @@
 	id <ImageSubmitDelegate> delegate;
 	
 	// directly manage the request
-	
 	ASIFormDataRequest *imageSubmitRequest;
 	
+    // migrating to Couch
+    BOOL sentToCouch;
+    
 	// managing Reachability
     Reachability* internetReach;
 	
@@ -89,7 +91,6 @@
 @property(nonatomic, retain) IBOutlet UITextField *captionTextField;
 @property(nonatomic, retain) IBOutlet UITextField *nameTextField;
 @property(nonatomic, retain) IBOutlet UITextField *emailTextField;
-//@property(nonatomic, retain) IBOutlet UITextField *urlTextField;
 
 @property(nonatomic, retain) IBOutlet UITextField *currentTextField;  // for keyboard management 
 
@@ -106,9 +107,16 @@
 
 @property(retain) ASIFormDataRequest *imageSubmitRequest;
 
+// migrating to Couch
+@property (nonatomic) BOOL sentToCouch;
+
 -(IBAction)cancelPhoto:(id)sender;
 -(IBAction)submitPhoto:(id)sender;
 -(void)killRequest;
+
+// migrating to Couch
+
+- (IBAction)submitPhotoMetadataToCouch:(id)sender;
 
 @end
 
