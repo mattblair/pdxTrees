@@ -719,7 +719,7 @@
     
     [self.submittingSpinner stopAnimating];
 	
-	if ([request responseStatusCode] == 200) {
+	if ([request responseStatusCode] == 201) {
 		
 		// return to detail view, which will display an alert view about success
 		[delegate imageSubmitViewControllerDidFinish:self withSubmission:YES];
