@@ -43,7 +43,22 @@ extern NSString * const kEmailFooter;
 // migrating to CouchDB submissions
 
 extern NSString * const kCouchURLForPhotoSubmission;
+extern NSString * const kCouchUsername;
+extern NSString * const kCouchPassword;
 
+// couch photo submission keys
+
+extern NSString * const kPhotoRelatedTreeIDKey;
+extern NSString * const kPhotoRelatedCouchIDKey;
+extern NSString * const kPhotoDateSubmittedKey;
+extern NSString * const kPhotoReviewStatusKey;
+extern NSString * const kPhotoCaptionKey;
+extern NSString * const kPhotoSubmitterNameKey;
+extern NSString * const kPhotoSubmitterEmailKey;
+
+// couch photo submission default values
+
+extern NSString * const kPhotoReviewStatusDefault;
 
 /*
 
@@ -78,4 +93,21 @@ NSString * const kEmailFooter = @"\n\n\n-----\nSent via the PDX Trees app\nFor m
 NSString * const kCouchURLForPhotoSubmission = @"http://elsewise.iriscouch.com/pdx_trees_photo_submissions";  // insecure
 
 
+NSString * const kCouchUsername = @"TBD";
+NSString * const kCouchPassword = @"TBD";
+
+// couch photo submission keys
+
+NSString * const kPhotoRelatedTreeIDKey = @"relatedTreeID";
+NSString * const kPhotoRelatedCouchIDKey = @"relatedCouchID";
+NSString * const kPhotoDateSubmittedKey = @"dateSubmitted";
+NSString * const kPhotoReviewStatusKey = @"reviewStatus";
+NSString * const kPhotoCaptionKey = @"caption";
+NSString * const kPhotoSubmitterNameKey = @"submitterName";
+NSString * const kPhotoSubmitterEmailKey = @"submitterEmail";
+
+// couch photo submission default values
+
+NSString * const kPhotoReviewStatusDefault = @"pending"; 
+ 
 */

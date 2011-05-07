@@ -46,6 +46,8 @@
 	
 	Tree *tree;
 	NSString *localPhotoPath;
+    NSString *submitterName;
+    NSString *submitterEmail;
 	
 	// UI
 	
@@ -74,7 +76,8 @@
 	ASIFormDataRequest *imageSubmitRequest;
 	
     // migrating to Couch
-    BOOL sentToCouch;
+    BOOL sendToCouch;
+    UISwitch *useCouchSwitch;
     
 	// managing Reachability
     Reachability* internetReach;
@@ -85,6 +88,8 @@
 
 @property (nonatomic, retain) Tree *tree;
 @property (nonatomic, retain) NSString *localPhotoPath;
+@property (nonatomic, retain) NSString *submitterName;
+@property (nonatomic, retain) NSString *submitterEmail;
 
 // UI
 
@@ -103,20 +108,25 @@
 @property(nonatomic, retain) IBOutlet UIBarButtonItem *saveButton;
 @property(nonatomic, retain) IBOutlet UIActivityIndicatorView *submittingSpinner;
 
+// temporary -- for field testing only
+@property (nonatomic, retain) IBOutlet UISwitch *useCouchSwitch;
+
 @property(nonatomic, retain) id <ImageSubmitDelegate> delegate;
 
 @property(retain) ASIFormDataRequest *imageSubmitRequest;
 
 // migrating to Couch
-@property (nonatomic) BOOL sentToCouch;
+@property (nonatomic) BOOL sendToCouch;
 
--(IBAction)cancelPhoto:(id)sender;
--(IBAction)submitPhoto:(id)sender;
--(void)killRequest;
+- (IBAction)cancelPhoto:(id)sender;
+- (IBAction)submitPhoto:(id)sender;
+- (void)killRequest;
 
-// migrating to Couch
+// migrating to Couch -- refactor after it's complete
 
-- (IBAction)submitPhotoMetadataToCouch:(id)sender;
+- (void)submitPhotoViaDjango;
+
+- (void)submitPhotoMetadataToCouch;
 
 @end
 

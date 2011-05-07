@@ -46,10 +46,13 @@
 
 @implementation ImageSubmitViewController
 
-@synthesize captionTextField, nameTextField, emailTextField, currentTextField, theImageView, ccExplainerLabel; //urlTextField
+@synthesize captionTextField, nameTextField, emailTextField, currentTextField, theImageView, ccExplainerLabel; 
+@synthesize submitterName, submitterEmail;
 @synthesize tree, localPhotoPath, cancelButton, saveButton, submittingSpinner, delegate, imageSubmitRequest;
-@synthesize sentToCouch;
 
+// temporary -- for field testing only
+@synthesize sendToCouch;
+@synthesize useCouchSwitch;
 
 #pragma mark -
 #pragma mark User-initiated Actions
@@ -58,10 +61,9 @@
 
 -(IBAction)submitPhoto:(id)sender {
 	
+    // disable UI elements
 	
-	// disable UI elements
-	
-	// disable save to prevent double-taps
+	// to prevent double-taps
 	saveButton.enabled = NO; 
 	
 	self.captionTextField.enabled = NO;
@@ -74,215 +76,143 @@
 	}
 	
 	
-	// store the values for name and email, if populated
+	// store the values for name and email, if populated, into settings and ivars
 	
-	BOOL fieldsRemembered = NO;
+	BOOL persistFieldDefaults = NO;
 	
+    NSUInteger maxLength = 0;
+    
 	if ([[nameTextField text] length] > 0) {
-	
-		[[NSUserDefaults standardUserDefaults] setObject:nameTextField.text forKey:@"displayName"];
+        
+        // truncate
+        if ([[nameTextField text] length] > 100) {
+            maxLength = 100;
+        }
+        else {
+            maxLength = [[nameTextField text] length];
+        }
+        
+        self.submitterName = [[nameTextField text] substringToIndex:maxLength];
+
+        
+		[[NSUserDefaults standardUserDefaults] setObject:submitterName forKey:@"displayName"];
 		
-		fieldsRemembered = YES;
+		persistFieldDefaults = YES;
 		
 	}
 	
 	if ([[emailTextField text] length] > 0) {
-		[[NSUserDefaults standardUserDefaults] setObject:emailTextField.text forKey:@"emailAddress"];
+        
+        // truncate
+        
+        if ([[emailTextField text] length] > 150) {
+            maxLength = 150;
+        }
+        else {
+            maxLength = [[emailTextField text] length];
+        }
 
-		fieldsRemembered = YES;
-	
+        self.submitterEmail = [[emailTextField text] substringToIndex:maxLength];
+        
+		[[NSUserDefaults standardUserDefaults] setObject:submitterEmail forKey:@"emailAddress"];
+        
+		persistFieldDefaults = YES;
 		
 	}
 	
-
-	if (fieldsRemembered) {
+    
+	if (persistFieldDefaults) {
+        
 		[[NSUserDefaults standardUserDefaults] synchronize];	
-		NSLog(@"Newly stored name and email are: %@, %@", [[NSUserDefaults standardUserDefaults] stringForKey:@"displayName"], [[NSUserDefaults standardUserDefaults] stringForKey:@"emailAddress"]);
+		
+        NSLog(@"Newly stored name and email are: %@, %@", [[NSUserDefaults standardUserDefaults] stringForKey:@"displayName"], [[NSUserDefaults standardUserDefaults] stringForKey:@"emailAddress"]);
 	}
 	/*
-	else {
-		NSLog(@"Fields not remembered.");  //else statement for testing only -- can delete
-	}
-	*/
-
-	
-	
-	
-	// Check Reachability first
+     else {
+     NSLog(@"Fields not remembered.");  //else statement for testing only -- can delete
+     }
+     */
+    
+    
+    // Check Reachability first
 	
 	// don't use a host check on the main thread because of possible DNS delays...
-
+    
 	NetworkStatus status = [[Reachability reachabilityForInternetConnection] currentReachabilityStatus];
 	
 	/*
-	enum {
-		
-		// Apple NetworkStatus Constant Names.
-		NotReachable     = kNotReachable,
-		ReachableViaWiFi = kReachableViaWiFi,
-		ReachableViaWWAN = kReachableViaWWAN
-		
-	};
-	*/
+     enum {
+     
+     // Apple NetworkStatus Constant Names.
+     NotReachable     = kNotReachable,
+     ReachableViaWiFi = kReachableViaWiFi,
+     ReachableViaWWAN = kReachableViaWWAN
+     
+     };
+     */
 	
 	/*
-	if (status == ReachableViaWiFi) {
-        // wifi connection
-		NSLog(@"Image Submit: Wi-Fi is available.");
-	}
-	if (status == ReachableViaWWAN) {
-		// wwan connection (could be GPRS, 2G or 3G)
-		NSLog(@"Image Submit: Only network available is 2G or 3G");	
-	}
-	*/
+     if (status == ReachableViaWiFi) {
+     // wifi connection
+     NSLog(@"Image Submit: Wi-Fi is available.");
+     }
+     if (status == ReachableViaWWAN) {
+     // wwan connection (could be GPRS, 2G or 3G)
+     NSLog(@"Image Submit: Only network available is 2G or 3G");	
+     }
+     */
 	
 	if (status == kReachableViaWiFi || status == kReachableViaWWAN) { 
-	
-
+        
+        
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachabilityChanged:) name: kReachabilityChangedNotification object: nil];
 		
 		internetReach = [[Reachability reachabilityForInternetConnection] retain];
 		[internetReach startNotifier];
 		
-
+        
 		// indicate the submission process is starting
-		[submittingSpinner startAnimating];
-		
-		//configure url and request -- v1.1: build from RESTConstants.h values
-		
-		NSString *authPostURL = [NSString stringWithFormat:@"http://%@:%@@%@", kAPIUsername,kAPIPassword,kAPIHostAndPath];
-		
-		// a peek at the URL
-		NSLog(@"Generated URL is: %@", authPostURL);
-		
-		NSURL *url = [NSURL URLWithString:authPostURL];	
+		[self.submittingSpinner startAnimating];
+    
+        
+        
+        // this is a temporary conditional for a/b testing in the field
+        
+        if (self.useCouchSwitch.on) {
+            //use couch
+            
+            self.sendToCouch = YES;
+            [self submitPhotoMetadataToCouch];
+        }
+        else {
+            
+            self.sendToCouch = NO;
+            [self submitPhotoViaDjango];
+        }
+    
+    
+    } //end of reachability = true
 
-		
-		self.imageSubmitRequest = [ASIFormDataRequest requestWithURL:url];
-		
-		[[self imageSubmitRequest] setRequestMethod:@"POST"];
-		
-		// set required fields
-		
-		// image
-		if ([[self localPhotoPath] length] > 0) {
-			
-			// In simulator, test with a photo included in the bundle, since simulator has no image library or camera:
-			//NSString *nullPhotoPath = [[NSBundle mainBundle] pathForResource:@"null-placeholder320.jpg" ofType:nil];
-			
-			// device code:
-			
-			// need to slice up path and file name: 
-			
-			NSArray *photoPathArray = [localPhotoPath pathComponents];
-			
-			NSLog(@"The photoPathArray is: %@", photoPathArray);
-			
-			[[self imageSubmitRequest] setFile:localPhotoPath
-				withFileName:[photoPathArray lastObject]  // last object in pathComponents is the filename
-			  andContentType:@"image/jpeg" 
-					  forKey:@"image"];
-		}
-		
-		
-		// related_tree_id
-		[[self imageSubmitRequest] setPostValue:[tree treeID] forKey:@"related_tree_id"];
-		
-		// related_tree_couch_id
-		[[self imageSubmitRequest] setPostValue:[tree couchID] forKey:@"related_tree_couch_id"];
-
-		
-		// The next three are hardcoded values the server will override in API v1:
-		
-		// date_submitted (YYYY-MM-DD)
-		[[self imageSubmitRequest] setPostValue:@"2010-10-01" forKey:@"date_submitted"];
-		
-		// flag_count (0)
-		[[self imageSubmitRequest] setPostValue:@"0" forKey:@"flag_count"];
-		
-		// review_status (pending)
-		[[self imageSubmitRequest] setPostValue:@"pending" forKey:@"review_status"];
-
-		
-		
-		// optional fields: server will validate. Just truncate to server field limits
-		
-		// caption (TextField -- can be long)
-		if ([[captionTextField text] length] > 0) {
-			
-			[[self imageSubmitRequest] setPostValue:captionTextField.text forKey:@"caption"];
-
-		}
-		
-
-		NSUInteger maxLength = 0;
-
-		// submitter_name (100)
-		
-		if ([[nameTextField text] length] > 0) {
-			
-			if ([[nameTextField text] length] > 100) {
-				maxLength = 100;
-			}
-			else {
-				maxLength = [[nameTextField text] length];
-			}
-
-			[[self imageSubmitRequest] setPostValue:[[nameTextField text] substringToIndex:maxLength] forKey:@"submitter_name"];
-			
-		} 
-		
-		// submitter_email -- validated server-side (150)
-		
-		if ([[emailTextField text] length] > 0) {
-			
-			if ([[emailTextField text] length] > 150) {
-				maxLength = 150;
-			}
-			else {
-				maxLength = [[emailTextField text] length];
-			}
-
-			[[self imageSubmitRequest] setPostValue:[[emailTextField text] substringToIndex:maxLength] forKey:@"submitter_email"];
-			
-		}
-		
-		// submitter_url (not implemented yet)
-
-		
-		// start request
-
-		// setup the progress indicator:
-		//[request setUploadProgressDelegate:uploadProgress];
-		
-		[[self imageSubmitRequest] setDelegate:self];
-		
-		// commented to add it to the queue instead
-		NSLog(@"Starting the async upload");
-		[[self imageSubmitRequest] startAsynchronous];
-		
-	} //end of reachability = true
-	
-	else {  // no reachability
-		
-		// detecting offline mode
-		// NSLog(@"Image Submit: No network access.");
-		
-		// add email submit here.
-		
-		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Connection" 
-														message:@"The internet is not available. Would you like to add the image to a draft email to send later?" 
-													   delegate:self 
-											  cancelButtonTitle:@"Cancel" 
-											  otherButtonTitles:@"Yes", nil];
-		[alert show];
-		[alert release];
-		
-		
-	}
+    else {  // no reachability
+        
+        // detecting offline mode
+        // NSLog(@"Image Submit: No network access.");
+        
+        // add email submit here.
+        
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Connection" 
+                                                        message:@"The internet is not available. Would you like to add the image to a draft email to send later?" 
+                                                       delegate:self 
+                                              cancelButtonTitle:@"Cancel" 
+                                              otherButtonTitles:@"Yes", nil];
+        [alert show];
+        [alert release];
+        
+        
+    }
+    
 
 }
-
 
 -(IBAction)cancelPhoto:(id)sender {
 	
@@ -294,6 +224,133 @@
 	
 	[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO];
 	
+}
+
+
+-(void)submitPhotoViaDjango {	
+	
+			
+    //configure url and request -- v1.1: build from RESTConstants.h values
+    
+    NSString *authPostURL = [NSString stringWithFormat:@"http://%@:%@@%@", kAPIUsername,kAPIPassword,kAPIHostAndPath];
+    
+    // a peek at the URL
+    NSLog(@"Generated URL is: %@", authPostURL);
+    
+    NSURL *url = [NSURL URLWithString:authPostURL];	
+
+    
+    self.imageSubmitRequest = [ASIFormDataRequest requestWithURL:url];
+    
+    [[self imageSubmitRequest] setRequestMethod:@"POST"];
+    
+    // set required fields
+    
+    // image
+    if ([[self localPhotoPath] length] > 0) {
+        
+        // In simulator, test with a photo included in the bundle, since simulator has no image library or camera:
+        //NSString *nullPhotoPath = [[NSBundle mainBundle] pathForResource:@"null-placeholder320.jpg" ofType:nil];
+        
+        // device code:
+        
+        // need to slice up path and file name: 
+        
+        NSArray *photoPathArray = [localPhotoPath pathComponents];
+        
+        NSLog(@"The photoPathArray is: %@", photoPathArray);
+        
+        [[self imageSubmitRequest] setFile:localPhotoPath
+            withFileName:[photoPathArray lastObject]  // last object in pathComponents is the filename
+          andContentType:@"image/jpeg" 
+                  forKey:@"image"];
+    }
+    
+    
+    // related_tree_id
+    [[self imageSubmitRequest] setPostValue:[tree treeID] forKey:@"related_tree_id"];
+    
+    // related_tree_couch_id
+    [[self imageSubmitRequest] setPostValue:[tree couchID] forKey:@"related_tree_couch_id"];
+
+    
+    // The next three are hardcoded values the server will override in API v1:
+    
+    // date_submitted (YYYY-MM-DD)
+    [[self imageSubmitRequest] setPostValue:@"2010-10-01" forKey:@"date_submitted"];
+    
+    // flag_count (0)
+    [[self imageSubmitRequest] setPostValue:@"0" forKey:@"flag_count"];
+    
+    // review_status (pending)
+    [[self imageSubmitRequest] setPostValue:@"pending" forKey:@"review_status"];
+
+    
+    
+    // optional fields: server will validate. Just truncate to server field limits
+    
+    // caption (TextField -- can be long)
+    if ([[captionTextField text] length] > 0) {
+        
+        [[self imageSubmitRequest] setPostValue:captionTextField.text forKey:@"caption"];
+
+    }
+    
+    // I moved the truncation code up to the IBAction, so just set values here:
+    
+    [[self imageSubmitRequest] setPostValue:self.submitterName forKey:@"submitter_name"];
+
+    [[self imageSubmitRequest] setPostValue:self.submitterEmail forKey:@"submitter_email"];
+    
+    // delete after test:
+    
+    /*
+
+    NSUInteger maxLength = 0;
+
+    // submitter_name (100)
+    
+    if ([[nameTextField text] length] > 0) {
+        
+        if ([[nameTextField text] length] > 100) {
+            maxLength = 100;
+        }
+        else {
+            maxLength = [[nameTextField text] length];
+        }
+
+        [[self imageSubmitRequest] setPostValue:[[nameTextField text] substringToIndex:maxLength] forKey:@"submitter_name"];
+        
+    } 
+    
+    // submitter_email -- validated server-side (150)
+    
+    if ([[emailTextField text] length] > 0) {
+        
+        if ([[emailTextField text] length] > 150) {
+            maxLength = 150;
+        }
+        else {
+            maxLength = [[emailTextField text] length];
+        }
+
+        [[self imageSubmitRequest] setPostValue:[[emailTextField text] substringToIndex:maxLength] forKey:@"submitter_email"];
+        
+    }
+    
+    */
+    // submitter_url (not implemented yet)
+
+    
+    // start request
+    
+    [[self imageSubmitRequest] setDelegate:self];
+    
+    // commented to add it to the queue instead
+    NSLog(@"Starting the async upload to Django");
+    [[self imageSubmitRequest] startAsynchronous];
+		
+
 }
 
 
@@ -501,11 +558,14 @@
 
 #pragma mark - Migrating to Couch
 
-- (IBAction)submitPhotoMetadataToCouch:(id)sender {
+- (void)submitPhotoMetadataToCouch {
     
-    // testing basic functionality first, then will port over the real stuff later
+    // needs authentication and HTTPS
     
     NSURL *theURL = [NSURL URLWithString:kCouchURLForPhotoSubmission];
+    
+    // Django version
+    //NSString *authPostURL = [NSString stringWithFormat:@"http://%@:%@@%@", kAPIUsername,kAPIPassword,kAPIHostAndPath];
     
     ASIHTTPRequest *photoSubmitRequest = [ASIHTTPRequest requestWithURL:theURL];
     
@@ -513,9 +573,22 @@
     
     [photoSubmitRequest addRequestHeader:@"Content-Type" value:@"application/json"];
     
-    // put some crap in there for now
+    // load the real data
     
-    NSDictionary *photoMetadataDict = [NSDictionary dictionaryWithObject:@"some crap" forKey:@"from-iOS"];
+    NSString *theDateStamp = [NSDateFormatter localizedStringFromDate:[NSDate date] dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle];
+    
+    // need to test caption for empty?
+    // need to truncate name and email, or just edit submissions?
+    
+    NSDictionary *photoMetadataDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                       [tree treeID], kPhotoRelatedTreeIDKey,
+                                       [tree couchID], kPhotoRelatedCouchIDKey,
+                                       theDateStamp, kPhotoDateSubmittedKey,
+                                       kPhotoReviewStatusDefault, kPhotoReviewStatusKey,
+                                       self.captionTextField.text, kPhotoCaptionKey,
+                                       self.submitterName, kPhotoSubmitterNameKey,
+                                       self.submitterEmail, kPhotoSubmitterEmailKey,
+                                       nil];
     
     NSString *jsonToSubmit = [photoMetadataDict JSONRepresentation];
     
@@ -533,54 +606,88 @@
 
 - (void)couchMetadataPOSTRequestFinished:(ASIHTTPRequest *)request {
     
-    // NSString *responseString = [request responseString];
 	NSLog(@"The Metadata POST HTTP Status code was: %d", [request responseStatusCode]);
 	NSLog(@"The Metadata POST response was: %@", [request responseString]);
     
-    // status should be 201 (Created) and responseString should be JSON
     
-    // The Image Submit response was: 
+    [self.submittingSpinner stopAnimating];
+    
+    // status should be 201 (Created) and responseString should be JSON that looks like:
+    
     // {"ok":true,"id":"bc623d29a6a3694544afa0d84f00da43","rev":"1-5ee7119822cb7faec5dcafdf326e8378"}
 
-    // parse id and rev to assembler url to submit photo
     
-    NSDictionary *metadataResponse = [[request responseString] JSONValue];
+    // How could localPhotoPath be empty? Add assertion? A simple length check != valid path
     
-    //  http://elsewise.iriscouch.com/mydb/<doc.id>/filename.jpg?rev=<doc.rev>
+    NSLog(@"localPhotoPath is %d characters long", [self.localPhotoPath length]);
+
+    if (([request responseStatusCode] == 201) && ([self.localPhotoPath length] > 0)) {
+        
+        // try to submit the photo
+        
+        [self.submittingSpinner startAnimating];
+        
+        // need to slice up path and file name: 
+        
+        NSArray *photoPathArray = [localPhotoPath pathComponents];
+        
+        NSLog(@"The photoPathArray is: %@", photoPathArray);
+        
+        // parse id and rev to assembler url to submit photo
+        
+        NSDictionary *metadataResponse = [[request responseString] JSONValue];
+        
+        //  http://elsewise.iriscouch.com/mydb/<doc.id>/filename.jpg?rev=<doc.rev>
+        
+        NSString *urlString = [NSString stringWithFormat:@"%@/%@/%@?rev=%@", 
+                               kCouchURLForPhotoSubmission, 
+                               [metadataResponse objectForKey:@"id"],
+                               [photoPathArray lastObject], // retrieve file name from path components
+                               [metadataResponse objectForKey:@"rev"]];
+        
+        NSLog(@"Assembled URL for submitting the photo is: %@", urlString);
+        
+        NSURL *imagePUTURL = [NSURL URLWithString:urlString];
+        
+        ASIHTTPRequest *imagePUTRequest = [ASIHTTPRequest requestWithURL:imagePUTURL];
+        
+        [imagePUTRequest setRequestMethod:@"PUT"];
+        
+        [imagePUTRequest addRequestHeader:@"Content-Type" value:@"image/jpeg"];
+        
+        // add image as data binary
+        
+        //NSString *thePhotoPath = [[NSBundle mainBundle] pathForResource:@"null-placeholder320.jpg" ofType:nil];
+        
+        [imagePUTRequest setPostBodyFilePath:localPhotoPath];
+        
+        [imagePUTRequest setShouldStreamPostDataFromDisk:YES];
+        
+        [imagePUTRequest setDelegate:self];
+        
+        [imagePUTRequest setDidFinishSelector:@selector(couchImagePUTRequestFinished:)];
+        
+        [imagePUTRequest setDidFailSelector:@selector(couchImagePUTRequestFailed:)];
+        
+        [imagePUTRequest startAsynchronous];
+        
+    }
+    else {
+        
+        // show error and recommend email
+        
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Not Submitted" 
+														message:@"Unable to upload image information. Would you like to send it my email?" 
+													   delegate:self 
+											  cancelButtonTitle:@"Cancel" 
+											  otherButtonTitles:@"OK", nil];
+        
+        [alert show];
+		[alert release];
+        
+    }
     
-    NSString *urlString = [NSString stringWithFormat:@"%@/%@/%@?rev=%@", 
-                           kCouchURLForPhotoSubmission, 
-                           [metadataResponse objectForKey:@"id"],
-                           @"testfile.jpg", // see code above to actually get the name
-                           [metadataResponse objectForKey:@"rev"]];
     
-    NSLog(@"Assembled URL for submitting the photo is: %@", urlString);
-    
-    NSURL *imagePUTURL = [NSURL URLWithString:urlString];
-    
-    ASIHTTPRequest *imagePUTRequest = [ASIHTTPRequest requestWithURL:imagePUTURL];
-    
-    [imagePUTRequest setRequestMethod:@"PUT"];
-    
-    [imagePUTRequest addRequestHeader:@"Content-Type" value:@"image/jpeg"];
-    
-    // add image as data binary
-    
-    NSString *nullPhotoPath = [[NSBundle mainBundle] pathForResource:@"null-placeholder320.jpg" ofType:nil];
-    
-    //[imagePUTRequest appendPostDataFromFile:nullPhotoPath];
-    
-    [imagePUTRequest setPostBodyFilePath:nullPhotoPath];
-    
-    [imagePUTRequest setShouldStreamPostDataFromDisk:YES];
-    
-    [imagePUTRequest setDelegate:self];
-    
-    [imagePUTRequest setDidFinishSelector:@selector(couchImagePUTRequestFinished:)];
-    
-    [imagePUTRequest setDidFailSelector:@selector(couchImagePUTRequestFailed:)];
-    
-    [imagePUTRequest startAsynchronous];
     
 }
 
@@ -589,25 +696,72 @@
     NSLog(@"The Metadata POST HTTP Status code was: %d", [request responseStatusCode]);
 	NSLog(@"The Metadata POST response was: %@", [request responseString]);
     
+    [self.submittingSpinner stopAnimating];
+    
     // if you don't even get this far, offer email
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Not Submitted" 
+                                                    message:@"Unable to upload image information. Would you like to send it my email?" 
+                                                   delegate:self 
+                                          cancelButtonTitle:@"Cancel" 
+                                          otherButtonTitles:@"OK", nil];
+    
+    [alert show];
+    [alert release];
     
     
 }
 
 - (void)couchImagePUTRequestFinished:(ASIHTTPRequest *)request {
     
-    //
     NSLog(@"The Image Submit PUT HTTP Status code was: %d", [request responseStatusCode]);
 	NSLog(@"The Image Submit PUT response was: %@", [request responseString]);
+    
+    [self.submittingSpinner stopAnimating];
+	
+	if ([request responseStatusCode] == 200) {
+		
+		// return to detail view, which will display an alert view about success
+		[delegate imageSubmitViewControllerDidFinish:self withSubmission:YES];
+		
+	}
+	
+	else {
+		
+        // handle the error by offering email:
+		
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Server Problem" 
+														message:@"Sorry, the server didn't receive the photo as expected. We'll fix that as soon as we can. Would you like to send the image by email instead?" 
+													   delegate:self 
+											  cancelButtonTitle:@"Cancel" 
+											  otherButtonTitles:@"OK", nil];
+		[alert show];
+		[alert release];
+		
+	}
+    
+    //self.imageSubmitRequest = nil;
     
 }
 
 
 - (void)couchImagePUTRequestFailed:(ASIHTTPRequest *)request {
     
-    //
+    
     NSLog(@"The Image Submit PUT HTTP Status code was: %d", [request responseStatusCode]);
 	NSLog(@"The Image Submit PUT response was: %@", [request responseString]);
+    
+    [self.submittingSpinner stopAnimating];
+    
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Photo Not Received" 
+                                                    message:@"Unable to upload image. Would you like to send it my email?" 
+                                                   delegate:self 
+                                          cancelButtonTitle:@"Cancel" 
+                                          otherButtonTitles:@"OK", nil];
+    
+    [alert show];
+    [alert release];
+    
     
 }
 
@@ -789,10 +943,6 @@
 	
 	self.ccExplainerLabel.text = @"We use the Creative Commons Attribution-Share-Alike license for all submitted photos. You can learn more about it at creativecommons.org.";
     
-    
-    // testing couch
-    [self submitPhotoMetadataToCouch:self];
-    
 }
 
 
@@ -824,6 +974,7 @@
 }
 
 - (void)viewDidUnload {
+
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -839,6 +990,8 @@
     self.cancelButton = nil;
     self.saveButton = nil;
     self.submittingSpinner = nil;
+    
+    self.useCouchSwitch = nil;
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
@@ -858,14 +1011,19 @@
 	
 	[localPhotoPath release];
 	[tree release];
+    [submitterName release];
+    [submitterEmail release];
 	
 	[cancelButton release];
 	[saveButton release];
 	[submittingSpinner release];
 	
 	[imageSubmitRequest release];
+    
+    [useCouchSwitch release];
 
 	
+    [useCouchSwitch release];
     [super dealloc];
 }
 
