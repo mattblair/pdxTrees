@@ -590,6 +590,8 @@
                                        self.submitterEmail, kPhotoSubmitterEmailKey,
                                        nil];
     
+    NSLog(@"Dictionary to submit looks like: %@", [photoMetadataDict description]);
+    
     NSString *jsonToSubmit = [photoMetadataDict JSONRepresentation];
     
     [photoSubmitRequest appendPostData:[jsonToSubmit dataUsingEncoding:NSUTF8StringEncoding]];
@@ -1022,8 +1024,6 @@
     
     [useCouchSwitch release];
 
-	
-    [useCouchSwitch release];
     [super dealloc];
 }
 
