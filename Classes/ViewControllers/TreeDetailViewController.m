@@ -884,7 +884,7 @@
 	NSError *error = [request error];
 	
 	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {  // not an error
-		NSLog(@"Cancellation initiated by killQueue method on viewWillDisappear.");
+		NSLog(@"TDVC requestFailed: Cancellation initiated by killQueue method on viewWillDisappear.");
 		
 	}
 	else {
@@ -990,7 +990,7 @@
 	NSError *error = [request error];
 	
 	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {  // not an error
-		NSLog(@"Cancellation initiated by killQueue method on viewWillDisappear, etc.");
+		NSLog(@"TDVC thumbnailRequestFailed: Cancellation initiated by killQueue method on viewWillDisappear, etc.");
 		
 	}
 	else {
@@ -1060,7 +1060,7 @@
 	NSError *error = [request error];
 	
 	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {  // not an error
-		NSLog(@"Cancellation initiated by killQueue method on viewWillDisappear, etc.");
+		NSLog(@"TDVC photoRequestFailed: Cancellation initiated by killQueue method on viewWillDisappear, etc.");
 				
 	}
 	else {

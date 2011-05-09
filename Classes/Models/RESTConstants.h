@@ -55,6 +55,7 @@ extern NSString * const kPhotoReviewStatusKey;
 extern NSString * const kPhotoCaptionKey;
 extern NSString * const kPhotoSubmitterNameKey;
 extern NSString * const kPhotoSubmitterEmailKey;
+extern NSString * const kPhotoUserAgentKey;
 
 // couch photo submission default values
 
@@ -105,6 +106,7 @@ NSString * const kPhotoReviewStatusKey = @"reviewStatus";
 NSString * const kPhotoCaptionKey = @"caption";
 NSString * const kPhotoSubmitterNameKey = @"submitterName";
 NSString * const kPhotoSubmitterEmailKey = @"submitterEmail";
+NSString * const kPhotoUserAgentKey = @"userAgent";
 
 // couch photo submission default values
 

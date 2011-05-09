@@ -576,6 +576,18 @@
     // load the real data
     
     NSString *theDateStamp = [NSDateFormatter localizedStringFromDate:[NSDate date] dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle];
+
+    // Captured by Django: PDX Trees 1.0.0 rv:11 (iPhone; iPhone OS 4.3.2; en_US) -- need region with language?
+    // Would need to call [NSLocale currentLocale] and parse components for more detail
+    
+    NSString *theUserAgent = [NSString stringWithFormat:@"%@ %@ build:%@ (%@; %@ %@; %@)", 
+                              [[[NSBundle mainBundle] infoDictionary] valueForKey:@"CFBundleDisplayName"],
+                              [[[NSBundle mainBundle] infoDictionary] valueForKey:@"CFBundleShortVersionString"],
+                              [[[NSBundle mainBundle] infoDictionary] valueForKey:@"CFBundleVersion"],
+                              [[UIDevice currentDevice] model],
+                              [[UIDevice currentDevice] systemName],
+                              [[UIDevice currentDevice] systemVersion],
+                              [[NSLocale preferredLanguages] objectAtIndex:0]];
     
     // need to test caption for empty?
     // need to truncate name and email, or just edit submissions?
@@ -588,6 +600,7 @@
                                        self.captionTextField.text, kPhotoCaptionKey,
                                        self.submitterName, kPhotoSubmitterNameKey,
                                        self.submitterEmail, kPhotoSubmitterEmailKey,
+                                       theUserAgent, kPhotoUserAgentKey,
                                        nil];
     
     NSLog(@"Dictionary to submit looks like: %@", [photoMetadataDict description]);
@@ -601,6 +614,10 @@
     [photoSubmitRequest setDidFinishSelector:@selector(couchMetadataPOSTRequestFinished:)];
     
     [photoSubmitRequest setDidFailSelector:@selector(couchMetadataPOSTRequestFailed:)];
+    
+    [photoSubmitRequest setUsername:kCouchUsername];
+    
+    [photoSubmitRequest setPassword:kCouchPassword];
                                                        
     [photoSubmitRequest startAsynchronous];
     
@@ -670,6 +687,10 @@
         [imagePUTRequest setDidFinishSelector:@selector(couchImagePUTRequestFinished:)];
         
         [imagePUTRequest setDidFailSelector:@selector(couchImagePUTRequestFailed:)];
+        
+        [imagePUTRequest setUsername:kCouchUsername];
+        
+        [imagePUTRequest setPassword:kCouchPassword];
         
         [imagePUTRequest startAsynchronous];
         
