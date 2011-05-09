@@ -13,7 +13,6 @@
 		28860BE50F44EE6400985440 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28860BE40F44EE6400985440 /* CoreData.framework */; };
 		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
 		C9155B421245AB9500076F95 /* TreeDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9155B401245AB9500076F95 /* TreeDetailViewController.m */; };
-		C9155B431245AB9500076F95 /* TreeDetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9155B411245AB9500076F95 /* TreeDetailViewController.xib */; };
 		C9155B481245B09900076F95 /* 74-location-invert.png in Resources */ = {isa = PBXBuildFile; fileRef = C9155B461245B09900076F95 /* 74-location-invert.png */; };
 		C9155B491245B09900076F95 /* 74-location-invert@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C9155B471245B09900076F95 /* 74-location-invert@2x.png */; };
 		C9155B7E1245BFBD00076F95 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9155B7D1245BFBD00076F95 /* MessageUI.framework */; };
@@ -65,6 +64,8 @@
 		C987A355124441D400BBFD5B /* iTunesArtwork in Resources */ = {isa = PBXBuildFile; fileRef = C987A350124441D400BBFD5B /* iTunesArtwork */; };
 		C987A392124448C500BBFD5B /* Tree.m in Sources */ = {isa = PBXBuildFile; fileRef = C987A391124448C500BBFD5B /* Tree.m */; };
 		C991417112619A1700DC8436 /* na-placeholder-320.jpg in Resources */ = {isa = PBXBuildFile; fileRef = C991417012619A1700DC8436 /* na-placeholder-320.jpg */; };
+		C996FCD51378239B00C2138C /* MapViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C996FCD31378239B00C2138C /* MapViewController.xib */; };
+		C996FCD61378239B00C2138C /* TreeDetailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C996FCD41378239B00C2138C /* TreeDetailViewController.xib */; };
 		C9C3D553137350ED00C640D1 /* CaptionedImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C3D552137350ED00C640D1 /* CaptionedImageView.m */; };
 		C9D0D88512447C0500CE60A9 /* some_tree_details_pp.json in Resources */ = {isa = PBXBuildFile; fileRef = C9D0D88412447C0500CE60A9 /* some_tree_details_pp.json */; };
 		C9D0D8FF124491C200CE60A9 /* tree_details_1.json in Resources */ = {isa = PBXBuildFile; fileRef = C9D0D8FE124491C200CE60A9 /* tree_details_1.json */; };
@@ -75,7 +76,6 @@
 		C9D0D9341245024200CE60A9 /* TreeMapAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D0D9331245024200CE60A9 /* TreeMapAnnotation.m */; };
 		C9D0D93C1245043700CE60A9 /* pdxTreesCD-100917.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = C9D0D93B1245043700CE60A9 /* pdxTreesCD-100917.sqlite */; };
 		C9D0D9461245072300CE60A9 /* MapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D0D9441245072300CE60A9 /* MapViewController.m */; };
-		C9D0D9471245072300CE60A9 /* MapViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9D0D9451245072300CE60A9 /* MapViewController.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -88,7 +88,6 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = main.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C9155B3F1245AB9500076F95 /* TreeDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = TreeDetailViewController.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		C9155B401245AB9500076F95 /* TreeDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = TreeDetailViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		C9155B411245AB9500076F95 /* TreeDetailViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = TreeDetailViewController.xib; path = ../../Classes/ViewControllers/TreeDetailViewController.xib; sourceTree = "<group>"; };
 		C9155B461245B09900076F95 /* 74-location-invert.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "74-location-invert.png"; sourceTree = "<group>"; };
 		C9155B471245B09900076F95 /* 74-location-invert@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "74-location-invert@2x.png"; sourceTree = "<group>"; };
 		C9155B7D1245BFBD00076F95 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -164,6 +163,8 @@
 		C987A390124448C500BBFD5B /* Tree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = Tree.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		C987A391124448C500BBFD5B /* Tree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = Tree.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C991417012619A1700DC8436 /* na-placeholder-320.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "na-placeholder-320.jpg"; sourceTree = "<group>"; };
+		C996FCD31378239B00C2138C /* MapViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MapViewController.xib; sourceTree = "<group>"; };
+		C996FCD41378239B00C2138C /* TreeDetailViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TreeDetailViewController.xib; sourceTree = "<group>"; };
 		C9C3D551137350EC00C640D1 /* CaptionedImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CaptionedImageView.h; sourceTree = "<group>"; };
 		C9C3D552137350ED00C640D1 /* CaptionedImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CaptionedImageView.m; sourceTree = "<group>"; };
 		C9D0D88412447C0500CE60A9 /* some_tree_details_pp.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = some_tree_details_pp.json; sourceTree = "<group>"; };
@@ -177,7 +178,6 @@
 		C9D0D93B1245043700CE60A9 /* pdxTreesCD-100917.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "pdxTreesCD-100917.sqlite"; sourceTree = "<group>"; };
 		C9D0D9431245072300CE60A9 /* MapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MapViewController.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		C9D0D9441245072300CE60A9 /* MapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MapViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		C9D0D9451245072300CE60A9 /* MapViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MapViewController.xib; path = ../../Classes/ViewControllers/MapViewController.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -403,8 +403,8 @@
 			isa = PBXGroup;
 			children = (
 				C987A3331244409A00BBFD5B /* MainWindow.xib */,
-				C9D0D9451245072300CE60A9 /* MapViewController.xib */,
-				C9155B411245AB9500076F95 /* TreeDetailViewController.xib */,
+				C996FCD31378239B00C2138C /* MapViewController.xib */,
+				C996FCD41378239B00C2138C /* TreeDetailViewController.xib */,
 				C95B85D91258CF1800B22E7E /* PhotoViewController.xib */,
 				C95B866A1258F3A100B22E7E /* ImageSubmitViewController.xib */,
 				C95B85DA1258CF1800B22E7E /* WebViewController.xib */,
@@ -480,8 +480,6 @@
 				C9D0D91E1244978900CE60A9 /* tree_details_4.json in Resources */,
 				C9D0D9231244981700CE60A9 /* tree_details_5.json in Resources */,
 				C9D0D93C1245043700CE60A9 /* pdxTreesCD-100917.sqlite in Resources */,
-				C9D0D9471245072300CE60A9 /* MapViewController.xib in Resources */,
-				C9155B431245AB9500076F95 /* TreeDetailViewController.xib in Resources */,
 				C9155B481245B09900076F95 /* 74-location-invert.png in Resources */,
 				C9155B491245B09900076F95 /* 74-location-invert@2x.png in Resources */,
 				C95B85DC1258CF1800B22E7E /* PhotoViewController.xib in Resources */,
@@ -499,6 +497,8 @@
 				C96919A01262350300FA43DF /* Default@2x.png in Resources */,
 				C97D5BC01262B67D00FCA7DF /* Icon-Small.png in Resources */,
 				C97D5BC11262B67D00FCA7DF /* Icon-Small@2x.png in Resources */,
+				C996FCD51378239B00C2138C /* MapViewController.xib in Resources */,
+				C996FCD61378239B00C2138C /* TreeDetailViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
