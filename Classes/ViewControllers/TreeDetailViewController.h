@@ -68,13 +68,14 @@
 	UIButton *image4Button;	
 	UIButton *addPhotoButton;
 
-	// Convey Activity
+	// Show Activity
 	UILabel *fetchingLabel;
 	UIActivityIndicatorView *fetchingSpinner;
 	
 	// Manage Requests
 	ASIHTTPRequest *imageListRequest;
 	ASINetworkQueue *imageRequestQueue;
+    BOOL usePhotoDownloadController;  // temporary -- for field testing only
 	
 	BOOL showImageSubmitNext; // to manage the display of ImageSubmit VC after an image is selected
 	NSString *selectedPhotoPath;
@@ -112,11 +113,15 @@
 @property(nonatomic, retain) IBOutlet UILabel *fetchingLabel;
 @property(nonatomic, retain) IBOutlet UIActivityIndicatorView *fetchingSpinner;
 
+
 @property(retain) ASIHTTPRequest *imageListRequest;
 @property(retain) ASINetworkQueue *imageRequestQueue;
 
-// to clear queue if leaving this view, etc.
+@property(nonatomic) BOOL usePhotoDownloadController; // temporary -- for field testing only
 
+
+// fetching Photos
+- (void)initPhotoRequests;
 - (void)killQueue;
 
 

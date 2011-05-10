@@ -50,6 +50,8 @@
 @synthesize fetchingLabel, fetchingSpinner, imageListRequest, imageRequestQueue, selectedPhotoPath;
 @synthesize commonNameLabel, locationNameLabel, notesLabel, heightLabel, circumferenceLabel;
 
+// temporary -- for field testing only
+@synthesize usePhotoDownloadController;
 
 #pragma mark -
 #pragma mark User-Initiated Actions
@@ -162,36 +164,42 @@
 - (IBAction)viewPhotos:(id)sender {
 	
 	
-	// create the photo VC
-	
-	PhotoViewController *photoVC = [[PhotoViewController alloc] initWithNibName:@"PhotoViewController" bundle:nil];
-	
-	// pass the array treeImageList and treeThumbnails arrays to the PhotoViewController
-	
-	photoVC.treeImageList = self.treeImageList;
-	
-	// pass in array of treePhotos
-	
-	photoVC.photoArray = self.treePhotos;
-	
-	// pass in array of Bools (stored as NSNumbers) so the Photo VC knows which still need to be fetched
-	photoVC.treePhotosReceived = self.treePhotosReceived;
-	
-	// pass the tree id to the Photo VC
-
-	photoVC.treeID = [[self tree] treeID];    // or is this not needed since we already have the photo URLs?
-	
-	photoVC.treeName = [[self tree] commonName];
-	
-	// Future: set page number based on which image is tapped
+    // TESTING ONLY: check usePhotoDownloadController while testing in parallel between the old and new way
     
-    photoVC.photoRequestedIndex = [sender tag]; // each button tag set in XIB
-	
-	// push it onto the nav stack
-	
-	[self.navigationController pushViewController:photoVC animated:YES];
-	
-	[photoVC release];
+    if (self.usePhotoDownloadController) {
+        // use the new GalleryViewController
+        NSLog(@"Testing new Gallery VC");
+
+    }
+    
+    else {
+        
+        // The OLD WAY: create the photo VC
+        
+        PhotoViewController *photoVC = [[PhotoViewController alloc] initWithNibName:@"PhotoViewController" bundle:nil];
+        
+        // pass the array treeImageList and treeThumbnails arrays to the PhotoViewController
+        photoVC.treeImageList = self.treeImageList;
+        
+        // pass in array of treePhotos
+        photoVC.photoArray = self.treePhotos;
+        
+        // pass in array of Bools (stored as NSNumbers) so the Photo VC knows which still need to be fetched
+        photoVC.treePhotosReceived = self.treePhotosReceived;
+        
+        // pass the tree id to the Photo VC
+        photoVC.treeID = [[self tree] treeID];    // or is this not needed since we already have the photo URLs?
+        
+        photoVC.treeName = [[self tree] commonName];
+        
+        // Set page number based on which image is tapped
+        photoVC.photoRequestedIndex = [sender tag]; // each button tag set in XIB
+        
+        [self.navigationController pushViewController:photoVC animated:YES];
+        
+        [photoVC release];
+        
+    }
 	
 }
 
@@ -549,83 +557,10 @@
 
 	fetchingLabel.hidden = NO;
 	fetchingSpinner.hidesWhenStopped = YES;
-	
-	
-	
-	// initiate the request for photos
-	
-	// Check Reachability first
-	
-	// delete with host call after testing
-	//NetworkStatus status = [[Reachability reachabilityWithHostName:@"pdxtrees.org"] currentReachabilityStatus];
-	NetworkStatus status = [[Reachability reachabilityForInternetConnection] currentReachabilityStatus];
-	
-	/*
-	 enum {
-	 
-	 // Apple NetworkStatus Constant Names.
-	 NotReachable     = kNotReachable,
-	 ReachableViaWiFi = kReachableViaWiFi,
-	 ReachableViaWWAN = kReachableViaWWAN
-	 
-	 };
-	 */
-	
-	// log connectivity during testing
-	/*
-	if (status == ReachableViaWiFi) {
-        // wifi connection
-		NSLog(@"Image List Request: Wi-Fi is available.");
-	}
-	if (status == ReachableViaWWAN) {
-		// wwan connection (could be GPRS, 2G or 3G)
-		NSLog(@"Image List Request: Only network available is 2G or 3G");	
-	}
-	*/
-	
-	
-	if (status == kReachableViaWiFi || status == kReachableViaWWAN) { 
-		
-	
-		// NSLog(@"Preparing request for tree photos...");
-		
-		// show a text label that says fetching images...	
-		fetchingLabel.text = @"Fetching Images...";
-		
-		// and start the activity spinner
-		[fetchingSpinner startAnimating];
-		
-		//v1.1: build the URL from RESTConstants.h values
-		//NSString *urlString = [NSString stringWithFormat:@"recreate URL", [[tree treeID] integerValue]];
-		
-		NSString *urlString = [NSString stringWithFormat:@"http://%@:%@@%@%d/iphonescreen/", kAPIUsername,kAPIPassword,kAPIHostAndPath, [[tree treeID] integerValue]];
-		
-		// confirmation code:
-		
-		NSLog(@"Generated Photo Request URL is: %@", urlString);
-		
-		NSURL *url = [NSURL URLWithString:urlString];
-
-		// made this an ivar so it can be cancelled easily
-		// [self imageListRequest]
-		
-		//ASIHTTPRequest *listRequest = [ASIHTTPRequest requestWithURL:url];
-		self.imageListRequest = [ASIHTTPRequest requestWithURL:url];
-
-		[[self imageListRequest] setDelegate:self];
-		[[self imageListRequest] startAsynchronous];
-		
-	}
-	else {
-		// no connection
-		// NSLog(@"Image List Request won't be made: no connection.");
-		fetchingLabel.text = @"Images not available. (Offline)";
-		[fetchingSpinner stopAnimating];
-	}
-
+    
+    [self initPhotoRequests];
 	
 }
-
 
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
@@ -681,6 +616,82 @@
 
 #pragma mark -
 #pragma mark Managing API Request for Image List Data
+
+- (void)initPhotoRequests {
+    
+    // once PDC tests out, all networking stuff will be removed from this VC
+    
+    if (self.usePhotoDownloadController) {
+        
+        NSLog(@"Use the PhotoDownload Controller");
+        
+    }
+    
+    else {
+    
+        // initiate the request for photos in the Old Ways
+        
+        // Check Reachability first
+        
+        NetworkStatus status = [[Reachability reachabilityForInternetConnection] currentReachabilityStatus];
+        
+        /*
+         enum {
+         
+         // Apple NetworkStatus Constant Names.
+         NotReachable     = kNotReachable,
+         ReachableViaWiFi = kReachableViaWiFi,
+         ReachableViaWWAN = kReachableViaWWAN
+         
+         };
+         */
+        
+        // log connectivity during testing
+        /*
+         if (status == ReachableViaWiFi) {
+         // wifi connection
+         NSLog(@"Image List Request: Wi-Fi is available.");
+         }
+         if (status == ReachableViaWWAN) {
+         // wwan connection (could be GPRS, 2G or 3G)
+         NSLog(@"Image List Request: Only network available is 2G or 3G");	
+         }
+         */
+        
+        
+        if (status == kReachableViaWiFi || status == kReachableViaWWAN) { 
+            
+            
+            // NSLog(@"TDVC: Internet Reachable. Preparing request for tree photos...");
+            
+            // Update UI
+            
+            fetchingLabel.text = @"Fetching Images...";
+            
+            [fetchingSpinner startAnimating];
+                        
+            NSString *urlString = [NSString stringWithFormat:@"http://%@:%@@%@%d/iphonescreen/", kAPIUsername,kAPIPassword,kAPIHostAndPath, [[tree treeID] integerValue]];
+            
+            NSLog(@"Generated Photo Request URL is: %@", urlString);
+            
+            NSURL *url = [NSURL URLWithString:urlString];
+            
+            self.imageListRequest = [ASIHTTPRequest requestWithURL:url];
+            
+            [[self imageListRequest] setDelegate:self];
+            [[self imageListRequest] startAsynchronous];
+            
+        }
+        else {
+            // no connection
+            // NSLog(@"Image List Request won't be made: no connection.");
+            fetchingLabel.text = @"Images not available. (Offline)";
+            [fetchingSpinner stopAnimating];
+        }
+    }
+    
+	
+}
 
 - (void)requestFinished:(ASIHTTPRequest *)request {
 	
@@ -897,7 +908,7 @@
 }
 
 #pragma mark -
-#pragma mark ASINetworkQueue Delegate Methods
+#pragma mark ASINetworkQueue Delegate Methods aka Photo Downloads
 
 -(void)thumbnailRequestFinished:(ASIHTTPRequest *)request {
 	
@@ -1096,8 +1107,9 @@
 	// Does it cause any problems to call cancel on an inactive queue?
 	// If so, you could check to see if requestsCount > 0 
 	
-	[[self imageRequestQueue] cancelAllOperations];
-	
+	if ([self.imageRequestQueue requestsCount] > 0 ) {
+        [[self imageRequestQueue] cancelAllOperations];
+    }
 	
 	// so that the rest of the requests don't keep calling the failed methods
 	self.imageRequestQueue = nil;
@@ -1131,7 +1143,10 @@
 
 	// NSLog(@"TDVC: Setting arrays to nil");
 	
-	self.imageRequestQueue = nil; 
+    // call killQueue instead so that operations are cancelled first
+	//self.imageRequestQueue = nil;  
+    
+    [self killQueue];
 	
 	self.treeThumbnails = nil;
 	

@@ -344,14 +344,13 @@
 		
 		
 		tdvc.tree = [fetchedItems objectAtIndex:0];
+        tdvc.usePhotoDownloadController = NO;       // this is a switch for testing, once it's been implemented
 			
 		// Push the Detail VC onto the stack
 			
 		[self.navigationController pushViewController:tdvc animated:YES];
 			
 	}
-		
-		
 		
 	
 	[fetchRequest release];
