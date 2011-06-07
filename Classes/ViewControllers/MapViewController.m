@@ -192,7 +192,7 @@
 			// NSLog(@"Latitude was more than 46 degrees!");
 		}
 		
-		if (currentCoordinate.longitude < -123.0 ) {  //i.e. if it is zero...
+		if (currentCoordinate.longitude < -123.0 ) {  
 			locationInDataRadius = NO;
 			// NSLog(@"Longitude was less than -123 degrees!");
 		}

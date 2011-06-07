@@ -249,10 +249,11 @@
 
 - (NSArray *)readTreeDetailsFromJSONFile {
 
-	// load a file with a partial set of trees and return an array of tree dicitonary objects
+	// load trees from a JSON file and return an array of tree dicitonary objects
+	// The file is included in the data folder, but is not added into the target.
 	
-	
-	NSString *filepath = [[NSBundle mainBundle] pathForResource:@"tree_details_5" ofType:@"json"];
+	NSString *filepath = [[NSBundle mainBundle] pathForResource:@"heritage-tree-details-100917-pp"
+                                                         ofType:@"json"];
 	
 	NSError *fileLoadError;
 	
@@ -265,8 +266,6 @@
 }
 
 - (void)importTreeDetails {
-	
-	// get the array
 	
 	NSArray *treeDetailArray = [self readTreeDetailsFromJSONFile];
 	
