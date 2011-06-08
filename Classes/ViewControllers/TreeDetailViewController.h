@@ -77,8 +77,12 @@
 	ASINetworkQueue *imageRequestQueue;
     BOOL usePhotoDownloadController;  // temporary -- for field testing only
 	
-	BOOL showImageSubmitNext; // old way of managing the display of ImageSubmit VC after an image is selected
+
 	NSString *selectedPhotoPath;
+	
+    // old way of managing the display of ImageSubmit VC after an image is selected
+    BOOL showImageSubmitNext; // delete after testing
+
 }
 
 // Data

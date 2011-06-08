@@ -36,6 +36,7 @@
 #import "Tree.h"
 
 @class ASIFormDataRequest;
+@class ASIHTTPRequest;
 @class Reachability;
 
 @protocol ImageSubmitDelegate;
@@ -69,12 +70,15 @@
 	// modal display management
 	id <ImageSubmitDelegate> delegate;
 	
-	// directly manage the request
+	// directly manage the request to Django API
 	ASIFormDataRequest *imageSubmitRequest;
 	
     // migrating to Couch -- refactor after field testing
     BOOL sendToCouch;
     UISwitch *useCouchSwitch;
+    
+    ASIHTTPRequest *metadataPOSTRequest;
+    ASIHTTPRequest *imagePUTRequest;
     
 	// managing Reachability
     Reachability* internetReach;
@@ -112,6 +116,8 @@
 
 // migrating to Couch
 @property (nonatomic) BOOL sendToCouch;
+@property(retain) ASIHTTPRequest *metadataPOSTRequest;
+@property(retain) ASIHTTPRequest *imagePUTRequest;
 
 - (IBAction)cancelPhoto:(id)sender;
 - (IBAction)submitPhoto:(id)sender;

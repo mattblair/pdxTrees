@@ -53,6 +53,7 @@
 // temporary -- for field testing only
 @synthesize sendToCouch;
 @synthesize useCouchSwitch;
+@synthesize metadataPOSTRequest, imagePUTRequest;
 
 #pragma mark -
 #pragma mark User-initiated Actions
@@ -439,7 +440,8 @@
 	
 	NSError *error = [request error];
 	
-	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {  // not an error
+    // This is not an error, but it gets thrown by ASIHTTPRequest when it is cancelled
+	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {
 		NSLog(@"Cancellation initiated by Reachability notification or directly by user.");
 		
 		// Keep this here in case of design change. 
@@ -470,27 +472,7 @@
 }
 
 
-- (void)killRequest {
-	
-	if ([[self imageSubmitRequest] inProgress]) {
-
-		// NSLog(@"Request is in progress, about to cancel.");		
-		
-		[[self imageSubmitRequest] cancel];  // does this always call requestFailed?
-
-		// NSLog(@"Request cancelled.");
-		
-		[submittingSpinner stopAnimating];
-        
-        
-        // not needed if the cancel calls requestFailed, nor if it has already succeeded failed, because it won't be in progress anymore? Confirm this.
-        self.imageSubmitRequest = nil; 
-		
-	}
-	
-}
-
-#pragma mark - Migrating to Couch
+#pragma mark - Upload images to CouchDB
 
 - (void)submitPhotoMetadataToCouch {
     
@@ -501,11 +483,11 @@
     // Django version
     //NSString *authPostURL = [NSString stringWithFormat:@"http://%@:%@@%@", kAPIUsername,kAPIPassword,kAPIHostAndPath];
     
-    ASIHTTPRequest *photoSubmitRequest = [ASIHTTPRequest requestWithURL:theURL];
+    self.metadataPOSTRequest = [ASIHTTPRequest requestWithURL:theURL];
     
-    [photoSubmitRequest setRequestMethod:@"POST"];
+    [self.metadataPOSTRequest setRequestMethod:@"POST"];
     
-    [photoSubmitRequest addRequestHeader:@"Content-Type" value:@"application/json"];
+    [self.metadataPOSTRequest addRequestHeader:@"Content-Type" value:@"application/json"];
        
     NSString *theDateStamp = [NSDateFormatter localizedStringFromDate:[NSDate date] dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle];
 
@@ -539,19 +521,19 @@
     
     NSString *jsonToSubmit = [photoMetadataDict JSONRepresentation];
     
-    [photoSubmitRequest appendPostData:[jsonToSubmit dataUsingEncoding:NSUTF8StringEncoding]];
+    [self.metadataPOSTRequest appendPostData:[jsonToSubmit dataUsingEncoding:NSUTF8StringEncoding]];
     
-    [photoSubmitRequest setDelegate:self];
+    [self.metadataPOSTRequest setDelegate:self];
     
-    [photoSubmitRequest setDidFinishSelector:@selector(couchMetadataPOSTRequestFinished:)];
+    [self.metadataPOSTRequest setDidFinishSelector:@selector(couchMetadataPOSTRequestFinished:)];
     
-    [photoSubmitRequest setDidFailSelector:@selector(couchMetadataPOSTRequestFailed:)];
+    [self.metadataPOSTRequest setDidFailSelector:@selector(couchMetadataPOSTRequestFailed:)];
     
-    [photoSubmitRequest setUsername:kCouchUsername];
+    [self.metadataPOSTRequest setUsername:kCouchUsername];
     
-    [photoSubmitRequest setPassword:kCouchPassword];
+    [self.metadataPOSTRequest setPassword:kCouchPassword];
                                                        
-    [photoSubmitRequest startAsynchronous];
+    [self.metadataPOSTRequest startAsynchronous];
     
 }
 
@@ -600,28 +582,28 @@
         
         NSURL *imagePUTURL = [NSURL URLWithString:urlString];
         
-        ASIHTTPRequest *imagePUTRequest = [ASIHTTPRequest requestWithURL:imagePUTURL];
+        self.imagePUTRequest = [ASIHTTPRequest requestWithURL:imagePUTURL];
         
-        [imagePUTRequest setRequestMethod:@"PUT"];
+        [self.imagePUTRequest setRequestMethod:@"PUT"];
         
-        [imagePUTRequest addRequestHeader:@"Content-Type" value:@"image/jpeg"];
+        [self.imagePUTRequest addRequestHeader:@"Content-Type" value:@"image/jpeg"];
         
         // add image as data binary
-        [imagePUTRequest setPostBodyFilePath:localPhotoPath];
+        [self.imagePUTRequest setPostBodyFilePath:localPhotoPath];
         
-        [imagePUTRequest setShouldStreamPostDataFromDisk:YES];
+        [self.imagePUTRequest setShouldStreamPostDataFromDisk:YES];
         
-        [imagePUTRequest setDelegate:self];
+        [self.imagePUTRequest setDelegate:self];
         
-        [imagePUTRequest setDidFinishSelector:@selector(couchImagePUTRequestFinished:)];
+        [self.imagePUTRequest setDidFinishSelector:@selector(couchImagePUTRequestFinished:)];
         
-        [imagePUTRequest setDidFailSelector:@selector(couchImagePUTRequestFailed:)];
+        [self.imagePUTRequest setDidFailSelector:@selector(couchImagePUTRequestFailed:)];
         
-        [imagePUTRequest setUsername:kCouchUsername];
+        [self.imagePUTRequest setUsername:kCouchUsername];
         
-        [imagePUTRequest setPassword:kCouchPassword];
+        [self.imagePUTRequest setPassword:kCouchPassword];
         
-        [imagePUTRequest startAsynchronous];
+        [self.imagePUTRequest startAsynchronous];
         
     }
     else {
@@ -639,25 +621,49 @@
         
     }
     
+    self.metadataPOSTRequest = nil;
+    
 }
 
+// Mimics the handling of cancels for Django-related methods
 - (void)couchMetadataPOSTRequestFailed:(ASIHTTPRequest *)request {
     
-    NSLog(@"The Metadata POST HTTP Status code was: %d", [request responseStatusCode]);
-	NSLog(@"The Metadata POST response was: %@", [request responseString]);
+    // update UI
+	[submittingSpinner stopAnimating];
+	
+	NSError *error = [request error];
     
-    [self.submittingSpinner stopAnimating];
+    // This is not an error, but it gets thrown by ASIHTTPRequest when it is cancelled
+	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {
+		NSLog(@"Cancellation initiated by Reachability notification or directly by user.");
+		
+		// Keep this here in case of design change. 
+        // Cancel button has its own call to this, as does No to email Alert View
+        
+		// return to TDVC for notification (was at bottom of method)
+		//[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO];
+		
+	}
     
-    // if you don't even get this far, offer email
+	else {
     
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Not Submitted" 
-                                                    message:@"Unable to upload image information. Would you like to send it my email?" 
-                                                   delegate:self 
-                                          cancelButtonTitle:@"Cancel" 
-                                          otherButtonTitles:@"OK", nil];
+        NSLog(@"Metadata POST Failed: HTTP Status code was: %d", [request responseStatusCode]);
+        NSLog(@"Metadata POST Failed: Response was: %@", [request responseString]);
+        
+        // If you don't even get this far, just offer email
+        
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Data Not Submitted" 
+                                                        message:@"Unable to upload image information. Would you like to send it my email?" 
+                                                       delegate:self 
+                                              cancelButtonTitle:@"Cancel" 
+                                              otherButtonTitles:@"OK", nil];
+        
+        [alert show];
+        [alert release];
     
-    [alert show];
-    [alert release];
+    }
+    
+    self.metadataPOSTRequest = nil;
     
 }
 
@@ -689,27 +695,42 @@
 		
 	}
     
-    //self.imageSubmitRequest = nil;
+    self.imagePUTRequest = nil;
     
 }
 
 
 - (void)couchImagePUTRequestFailed:(ASIHTTPRequest *)request {
     
+    // update UI
+	[self.submittingSpinner stopAnimating];
+	
+	NSError *error = [request error];
     
-    NSLog(@"The Image Submit PUT HTTP Status code was: %d", [request responseStatusCode]);
-	NSLog(@"The Image Submit PUT response was: %@", [request responseString]);
+    // This is not an error, but it gets thrown by ASIHTTPRequest when it is cancelled
+	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {
+		NSLog(@"Cancellation initiated by Reachability notification or directly by user.");
+				
+	}
     
-    [self.submittingSpinner stopAnimating];
+	else {
+ 
+        NSLog(@"Image Submit PUT Failed: HTTP Status code was: %d", [request responseStatusCode]);
+        // Can cause a crash during cancel?    
+        NSLog(@"Image Submit PUT Failed: Response was: %@", [[request responseString] description]);
+        
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Photo Not Received" 
+                                                        message:@"Unable to upload image. Would you like to send it my email?" 
+                                                       delegate:self 
+                                              cancelButtonTitle:@"Cancel" 
+                                              otherButtonTitles:@"OK", nil];
+        
+        [alert show];
+        [alert release];
+        
+    }
     
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Photo Not Received" 
-                                                    message:@"Unable to upload image. Would you like to send it my email?" 
-                                                   delegate:self 
-                                          cancelButtonTitle:@"Cancel" 
-                                          otherButtonTitles:@"OK", nil];
-    
-    [alert show];
-    [alert release];
+    self.imagePUTRequest = nil;
     
 }
 
@@ -741,14 +762,64 @@
 	
 }
 
+// TEMP: Handles both Django and Couch oriented requests
+// Once you decide, remove the ones you don't need.
+- (void)killRequest {
+	
+    // Django
+	if ([[self imageSubmitRequest] inProgress]) {
+        
+		NSLog(@"Django Image Submit Request is in progress, about to cancel.");		
+		
+		[[self imageSubmitRequest] cancel];  // does this always call requestFailed?
+        
+		// NSLog(@"Request cancelled.");
+		
+		[submittingSpinner stopAnimating];
+        
+        
+        // not needed if the cancel calls requestFailed, nor if it has already succeeded failed, because it won't be in progress anymore? Confirm this.
+        self.imageSubmitRequest = nil; 
+		
+	}
+    
+    // CouchDB
+    if (self.metadataPOSTRequest.inProgress) {
+        
+		NSLog(@"Couch Metadata request is in progress, about to cancel.");		
+		
+		[self.metadataPOSTRequest cancel]; 
+		
+		[self.submittingSpinner stopAnimating];
+        
+        self.metadataPOSTRequest = nil; 
+		
+	}
+    
+    if (self.imagePUTRequest.inProgress) {
+        
+		NSLog(@"Couch Metadata request is in progress, about to cancel.");		
+		
+		[self.imagePUTRequest cancel]; 
+		
+		[self.submittingSpinner stopAnimating];
+        
+        self.imagePUTRequest = nil; 
+		
+	}
+    
+}
+
 #pragma mark -
 #pragma mark Handle UIAlertView Choice
 
+
+// refactor this to simplify -- UI flow has changed since this was originaly written
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
 	
 	if ([[alertView title] isEqual:@"Thank You"]) {
 		
-		// dismiss the image submit VC, without confirmation from tdvc
+		// submitted by email, so tell TDVC it should dismiss without confirmation alert
 		
 		[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO]; 
 		
@@ -924,7 +995,9 @@
     self.saveButton = nil;
     self.submittingSpinner = nil;
     
-    self.useCouchSwitch = nil;
+    self.useCouchSwitch = nil;  //temporary
+    
+    // requests are set to nil in success/failure callbacks
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
@@ -932,7 +1005,6 @@
 
 
 - (void)dealloc {
-	
 	
 	[captionTextField release];
 	[nameTextField release];
@@ -953,7 +1025,11 @@
 	
 	[imageSubmitRequest release];
     
-    [useCouchSwitch release];
+    // new for COUCH uploads
+    [useCouchSwitch release]; // temporary
+    
+    [metadataPOSTRequest release];
+    [imagePUTRequest release];
 
     [super dealloc];
 }

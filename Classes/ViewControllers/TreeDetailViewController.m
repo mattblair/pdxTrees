@@ -296,9 +296,7 @@
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
 	
-	// get rid of the modal view
 	[self dismissModalViewControllerAnimated:YES];
-	//[picker release];
 	
 	/*
 	 keys of info dictionary:
@@ -381,7 +379,7 @@
     // Delay to deconflict with dismissal of image picker
     // Without a delay, Image Submit VC never appears
     // Is .5 long enough? Test on older devices
-    [self performSelector:@selector(showImageSubmitter) withObject:nil afterDelay:0.5f];
+    [self performSelector:@selector(showImageSubmitter) withObject:nil afterDelay:0.7f];
     
 }
 
