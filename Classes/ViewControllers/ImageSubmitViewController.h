@@ -54,7 +54,6 @@
 	UITextField *captionTextField;
 	UITextField *nameTextField;
 	UITextField *emailTextField;
-	//UITextField	*urlTextField;
 	
 	UITextField	*currentTextField;   // for keyboard management
 	
@@ -75,7 +74,7 @@
 	// directly manage the request
 	ASIFormDataRequest *imageSubmitRequest;
 	
-    // migrating to Couch
+    // migrating to Couch -- refactor after field testing
     BOOL sendToCouch;
     UISwitch *useCouchSwitch;
     
@@ -87,9 +86,9 @@
 // data
 
 @property (nonatomic, retain) Tree *tree;
-@property (nonatomic, retain) NSString *localPhotoPath;
-@property (nonatomic, retain) NSString *submitterName;
-@property (nonatomic, retain) NSString *submitterEmail;
+@property (nonatomic, copy) NSString *localPhotoPath;
+@property (nonatomic, copy) NSString *submitterName;
+@property (nonatomic, copy) NSString *submitterEmail;
 
 // UI
 
@@ -122,10 +121,9 @@
 - (IBAction)submitPhoto:(id)sender;
 - (void)killRequest;
 
+
 // migrating to Couch -- refactor after it's complete
-
 - (void)submitPhotoViaDjango;
-
 - (void)submitPhotoMetadataToCouch;
 
 @end

@@ -65,17 +65,17 @@
 @property (nonatomic, retain) NSDate *lastEditDate;
 
 // optional
-@property (nonatomic, retain) NSString *address;
+@property (nonatomic, copy) NSString *address;
 @property (nonatomic, retain) NSNumber *circumference;
-@property (nonatomic, retain) NSString *commonName;
-@property (nonatomic, retain) NSString *couchID;
+@property (nonatomic, copy) NSString *commonName;
+@property (nonatomic, copy) NSString *couchID;
 @property (nonatomic, retain) NSNumber *diameter;
 @property (nonatomic, retain) NSNumber *height;
 @property (nonatomic, retain) NSNumber *spread;
-@property (nonatomic, retain) NSString *notes;
-@property (nonatomic, retain) NSString *ownerName;
-@property (nonatomic, retain) NSString *scientificName;
-@property (nonatomic, retain) NSString *stateID;
+@property (nonatomic, copy) NSString *notes;
+@property (nonatomic, copy) NSString *ownerName;
+@property (nonatomic, copy) NSString *scientificName;
+@property (nonatomic, copy) NSString *stateID;
 @property (nonatomic, retain) NSNumber *yearDesignated;
 
 @end

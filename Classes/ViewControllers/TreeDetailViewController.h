@@ -88,7 +88,7 @@
 @property (nonatomic, retain) NSMutableArray *treeThumbnails;
 @property (nonatomic, retain) NSMutableArray *treePhotos;	
 @property (nonatomic, retain) NSMutableArray *treePhotosReceived;
-@property (nonatomic, retain) NSString *selectedPhotoPath;
+@property (nonatomic, copy) NSString *selectedPhotoPath;
 
 // Detail Display UI
 

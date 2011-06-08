@@ -77,7 +77,7 @@
 @property (nonatomic, retain) NSMutableArray *photoArray;
 @property (nonatomic, retain) NSMutableArray *treePhotosReceived;
 @property (nonatomic, retain) NSNumber *treeID;
-@property (nonatomic, retain) NSString *treeName;
+@property (nonatomic, copy) NSString *treeName;
 
 @property (nonatomic) NSInteger photoRequestedIndex;
 

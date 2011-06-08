@@ -48,7 +48,7 @@
 
 }
 
-@property(nonatomic,retain) NSString *sciNameToSearch;
+@property(nonatomic,copy) NSString *sciNameToSearch;
 
 @property(nonatomic,retain) IBOutlet UIWebView *theWebView;
 
