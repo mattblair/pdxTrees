@@ -328,22 +328,6 @@
 	
 }
 
--(IBAction)goBack {
-	
-	// go back
-	
-	[theWebView goBack];
-
-}
-
--(IBAction)goForward {
-	
-	// go....forward....
-	
-	[theWebView goForward];
-	
-}
-
 -(IBAction)navigateWebView:(id)sender {
 	
 	// depending on what the user did

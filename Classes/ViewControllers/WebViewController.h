@@ -59,8 +59,6 @@
 
 -(void)reachabilityChanged: (NSNotification* )note;
 
--(IBAction)goBack;
-
--(IBAction)goForward;
+-(IBAction)navigateWebView:(id)sender;
 
 @end
