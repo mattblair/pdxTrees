@@ -89,6 +89,7 @@
     
     
     // you have a total of 380.0 points of height to play with
+    // change these to constant values
     
     self.imageView = [[UIImageView alloc] initWithImage:image];
         
@@ -104,11 +105,13 @@
     
     self.captionLabel.textColor = [UIColor whiteColor];
     
+    self.captionLabel.opaque = YES; // for performance
+    
     self.captionLabel.numberOfLines = 3;
     
     self.captionLabel.font = [UIFont systemFontOfSize:12.0];
     
-    self.captionLabel.backgroundColor = [UIColor blueColor]; //obviously for testing only, change to clear?
+    self.captionLabel.backgroundColor = [UIColor blueColor]; //obviously for testing only, change to black?
     
     self.captionLabel.accessibilityLabel = @"Caption";
     

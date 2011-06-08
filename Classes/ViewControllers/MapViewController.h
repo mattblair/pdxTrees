@@ -36,7 +36,10 @@
 #import <MapKit/MapKit.h>
 #import <CoreLocation/CoreLocation.h>
 
-@interface MapViewController : UIViewController <MKMapViewDelegate, NSFetchedResultsControllerDelegate, CLLocationManagerDelegate> {
+// removed NSFetchedResultsControllerDelegate protocol
+// I think it's just Core Data template boilerplate you don't need
+
+@interface MapViewController : UIViewController <MKMapViewDelegate, CLLocationManagerDelegate> {
 
 	MKMapView *treeMapView;
 	UIButton *infoButton;
@@ -46,7 +49,7 @@
 	BOOL locationReallyEnabled;  // to handle CL behavior in iOS 4.1
 	
 @private
-    NSFetchedResultsController *fetchedResultsController_;
+    //NSFetchedResultsController *fetchedResultsController_;
     NSManagedObjectContext *managedObjectContext_;	
 	
 }
@@ -58,7 +61,7 @@
 
 
 @property (nonatomic, retain) NSManagedObjectContext *managedObjectContext;
-@property (nonatomic, retain) NSFetchedResultsController *fetchedResultsController;
+//@property (nonatomic, retain) NSFetchedResultsController *fetchedResultsController;
 
 - (void)refreshTreesOnMap;
 

@@ -36,7 +36,7 @@
 
 @implementation TreeMapAnnotation
 
-@synthesize title, subtitle, latitude, longitude, treeID; // capital T in subtitle in v1.0 caused this to fail
+@synthesize title, subtitle, latitude, longitude, treeID;
 
 - (id)initWithLocation:(CLLocationCoordinate2D)coord {
     self = [super init];

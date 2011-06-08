@@ -54,7 +54,8 @@
 
 @synthesize treeMapView, infoButton, locationManager;
 
-@synthesize fetchedResultsController=fetchedResultsController_, managedObjectContext=managedObjectContext_;
+// used to synthesize fetchedResultsController=fetchedResultsController_
+@synthesize managedObjectContext=managedObjectContext_;
 
 
 #pragma mark -
@@ -80,13 +81,7 @@
 	
 	// Tests for a truly valid current location. 
 	// If available, sets newRegion to center on the current location. If not, sets newRegion to default.
-	// Moves map to newRegion, and requests a re-population of the tree placemarks.
-	
-	
-	// Future: read defaults from NSUserDefaults (see poetryBox code for details) e.g.
-	
-	// NSDictionary *initialRegion = [[NSUserDefaults standardUserDefaults] objectForKey:@"initialMapViewRegion"];
-	
+	// After moving map to newRegion, requests a re-population of the tree placemarks.
 	
 	/*
 	 
@@ -108,7 +103,7 @@
 	 Latitude:  45.530675
 	 Longitude: -122.626691
 	 
-	 And a radius of 14 km should do it.
+	 And a radius of 14 km to determine if the user is within the data.
 	 
 	 */
 	
@@ -127,7 +122,7 @@
 		
 		// test and test the other two criteria
 		
-		// [[[self treeMapView] userLocation] location] doesn't have timestamp or accuracy
+		// [[[self treeMapView] userLocation] location] won't work -- doesn't have timestamp or accuracy
 		CLLocation *currentLocation = [[self locationManager] location];
 		
 		NSDate *newLocationDate = currentLocation.timestamp;
@@ -142,7 +137,6 @@
 		// changed this to >= 2.0 because it is returning 0.0 on failure in iOS 4.1, not a negative number
 		if ((abs(timeDiff) < 15.0) && (currentLocation.horizontalAccuracy < 101.0) && (currentLocation.horizontalAccuracy >= 2.0)) {
 			
-			// it's a quality coordinate
 			locationAccurateEnough = YES;
 			// NSLog(@"Current location is accurate enough.");
 			
@@ -157,7 +151,6 @@
 		
 		// production
 		CLLocation *pdxCenterLocation = [[CLLocation alloc] initWithLatitude:45.530675 longitude:-122.626691];
-		
 		
 		
 		CLLocationDistance locationDiff = [currentLocation distanceFromLocation:pdxCenterLocation];
@@ -175,12 +168,11 @@
 		
 		[pdxCenterLocation release];
 		
-		// added because of CL behavior in 4.1
+   		// added because of CL behavior in 4.1
+        // Series of crude bounds tests for far-away locations that return 0.0 from distanceFromLocation method
+		// These should also be future-proof for when CL returns expected values
 		
 		CLLocationCoordinate2D currentCoordinate = [currentLocation coordinate];
-		
-		// Series of crude bounds tests for far-away locations that return 0.0 from distanceFromLocation method
-		// These should also be future-proof for when CL returns expected values
 		
 		if (currentCoordinate.latitude < 45.0 ) {  //i.e. if it is zero...
 			locationInDataRadius = NO;
@@ -248,7 +240,7 @@
 	[self refreshTreesOnMap];
 	
 	// This should be turned off by the previous method call, but it seems like that is happening at the same time
-	// the region is changing, and the button is ending up enabled. Force the issue.
+	// the region is changing, and the button is ending up enabled. Force the issue...
 	self.navigationItem.rightBarButtonItem.enabled = NO;
 	
 	
@@ -260,7 +252,7 @@
 
 - (void)mapView:(MKMapView *)map regionDidChangeAnimated:(BOOL)animated {
 	
-	//enable the refresh button to refresh search
+	// let the user refresh on demand after moving map
 	
 	self.navigationItem.rightBarButtonItem.enabled = YES;
 	
@@ -293,13 +285,12 @@
 	{
 		// If an existing pin view was not available, create one.
 		pinView = [[[MKPinAnnotationView alloc] initWithAnnotation:annotation
-												   reuseIdentifier:@"CustomPinAnnotationView"] // was CustomPinAnnotation in Apple Sample Code?
+												   reuseIdentifier:@"CustomPinAnnotationView"] 
 				   autorelease];
 		pinView.pinColor = MKPinAnnotationColorGreen;
 		pinView.animatesDrop = YES;
 		pinView.canShowCallout = YES;
 		
-		// Add a detail disclosure button to the callout
 		UIButton* rightButton = [UIButton buttonWithType:
 								 UIButtonTypeDetailDisclosure];
 		
@@ -342,21 +333,15 @@
     }
     else  {
 		
-		
 		tdvc.tree = [fetchedItems objectAtIndex:0];
         tdvc.usePhotoDownloadController = NO;       // this is a switch for testing, once it's been implemented
-			
-		// Push the Detail VC onto the stack
 			
 		[self.navigationController pushViewController:tdvc animated:YES];
 			
 	}
-		
 	
 	[fetchRequest release];
-	
-	// release the Detail VC
-	
+		
 	[tdvc release];
 	
 	
@@ -378,7 +363,7 @@
 	}
 	
 	locationManager = [[CLLocationManager alloc] init];
-	[locationManager setDesiredAccuracy:kCLLocationAccuracyHundredMeters]; // or kCLLocationAccuracyNearestTenMeters
+	[locationManager setDesiredAccuracy:kCLLocationAccuracyHundredMeters]; // or kCLLocationAccuracyNearestTenMeters?
 	[locationManager setDelegate:self];
 	
 	return locationManager;
@@ -516,18 +501,11 @@
 	
 	// make an array of annotations for the returned set of trees
 	
-	
-	// create treeAnnotationList
-	
 	NSMutableArray *treeAnnotationList = [NSMutableArray array];
-	
-	// See if any trees were found
 	
 	if ([managedObjectArray count] > 0) {
 		
 		TreeMapAnnotation *tma = nil;
-		
-		// iterate through the managed object array and create tree map annotations...
 		
 		for (Tree *theTree in managedObjectArray) {
 			
@@ -565,8 +543,7 @@
 	// turn the button off to prevent multiple refreshes
 	self.navigationItem.rightBarButtonItem.enabled = NO;
 	
-	// code to fetch a tree list for the current regions
-	NSArray *treeList = [self treeListForMapRegion:treeMapView.region maximumCount:12];  //max is currently disabled
+	NSArray *treeList = [self treeListForMapRegion:treeMapView.region maximumCount:12];  //maximumCount is not in use
 	
 	if ([treeList count] > 0) {
 		
@@ -590,7 +567,7 @@
 		
 		double currentLatitudeDelta = self.treeMapView.region.span.latitudeDelta;
 		
-		if (currentLatitudeDelta > kLatitudeDeltaThreshold) {  // test this value
+		if (currentLatitudeDelta > kLatitudeDeltaThreshold) {
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Trees Found" 
 															message:@"There don't seem to be any Heritage Trees nearby, and you're already looking at a wide view. Would you like to go to the default view?" 
 														   delegate:self 
@@ -629,13 +606,16 @@
 	
 	if (buttonIndex == 1) {  // if they tapped yes
 
-		// get the current region
+		// get the current region to alter it
 		
 		MKCoordinateRegion newRegion = self.treeMapView.region;
 		
 		double oldLatitudeDelta = newRegion.span.latitudeDelta;
 		double oldLongitudeDelta = newRegion.span.longitudeDelta;
 		
+        // Even though it seems like they have a choice, they'll go to default if 
+        // they are too far out anyway.
+        
 		if (oldLatitudeDelta > kLatitudeDeltaThreshold) {
 			
 			// go to default view
@@ -649,8 +629,8 @@
 			
 		}
 		else {
-			double newLatitudeDelta = oldLatitudeDelta * kWidenMapViewIncrement; //1.2
-			double newLongitudeDelta = oldLongitudeDelta * kWidenMapViewIncrement; //1.2
+			double newLatitudeDelta = oldLatitudeDelta * kWidenMapViewIncrement; 
+			double newLongitudeDelta = oldLongitudeDelta * kWidenMapViewIncrement; 
 			
 			newRegion.span.latitudeDelta = newLatitudeDelta;
 			newRegion.span.longitudeDelta = newLongitudeDelta;
@@ -664,7 +644,7 @@
 		
 		[self refreshTreesOnMap];
 		
-		// need to call here to make sure button is disabled. See note in the adjustMapRegion method
+		// make sure Refresh is really turned off.
 		self.navigationItem.rightBarButtonItem.enabled = NO;
 		
 		
@@ -691,8 +671,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 	
-
-	//Set the title
 	self.navigationItem.title = @"Heritage Trees";
 	
 	//setup the navigation bar buttons
@@ -702,7 +680,7 @@
     UIBarButtonItem *clButton = [[UIBarButtonItem alloc] initWithImage:locationImage 
 																 style:UIBarButtonItemStylePlain 
 																target:self 
-																action:@selector(adjustMapRegion)];  // was goToDefaultLocation
+																action:@selector(adjustMapRegion)];  
 	self.navigationItem.leftBarButtonItem = clButton;
     [clButton release];
 	
@@ -761,6 +739,9 @@
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
+    
+    self.treeMapView = nil;
+    self.infoButton = nil;
 }
 
 

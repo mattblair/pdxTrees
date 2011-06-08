@@ -37,7 +37,7 @@
 @interface TreeMapAnnotation : NSObject <MKAnnotation> {
 	
 	NSString *title;
-	NSString *subtitle;  // capital T in subtitle in v1.0 caused this to fail
+	NSString *subtitle;
 	NSNumber *latitude;
 	NSNumber *longitude;
 	NSNumber *treeID;
@@ -47,7 +47,7 @@
 
 @property (nonatomic, readonly) CLLocationCoordinate2D coordinate;
 @property (nonatomic, retain) NSString *title;
-@property (nonatomic, retain) NSString *subtitle; // capital T in subtitle in v1.0 caused this to fail
+@property (nonatomic, retain) NSString *subtitle;
 @property (nonatomic, retain) NSNumber *latitude;
 @property (nonatomic, retain) NSNumber *longitude;
 @property (nonatomic, retain) NSNumber *treeID;

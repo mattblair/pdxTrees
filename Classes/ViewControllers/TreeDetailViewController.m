@@ -59,9 +59,7 @@
 
 	// Future: ask them if they want to text/email/tweet/fb or cancel
 	
-	if ([MFMailComposeViewController canSendMail]) {  //verify that mail is configured on the device
-		
-		//present the mail window with boilerplate
+	if ([MFMailComposeViewController canSendMail]) {
 		
 		MFMailComposeViewController *mailVC = [[MFMailComposeViewController alloc] init];
 		
@@ -81,17 +79,17 @@
 		// conditionally insert notes
 		if ([[tree notes] length] > 0) {
 			
-			
+			// Ugly way to capitalize the first letter
 			NSString *notesText = [[tree notes] stringByReplacingCharactersInRange:NSMakeRange(0, 1) 
 																	withString:[[[tree notes] substringToIndex:1] uppercaseString]];
 			[treeDetails appendFormat:@"\n%@", notesText];
 		}
 		
-		// define footer
-		NSString *pdxTreesFooter = @"\n\n\n-----\nTo learn more about Portland's Heritage Trees, visit: http://pdxtrees.org";
+		// define footer -- now a constant
+		//NSString *pdxTreesFooter = @"\n\n\n-----\nTo learn more about Portland's Heritage Trees, visit: http://pdxtrees.org";
 		
 		NSString *messageBody = [NSString stringWithFormat:@"Have you heard about Portland's Heritage Trees? I thought you might like this %@.  %@  %@", 
-								 [[tree commonName] capitalizedString], treeDetails, pdxTreesFooter];
+								 [[tree commonName] capitalizedString], treeDetails, kEmailFooter];
 		
 		[mailVC setSubject:[NSString stringWithFormat:@"Heritage Tree: %@", [[tree commonName] capitalizedString]]];
 		[mailVC setMessageBody:messageBody isHTML:NO];
@@ -137,18 +135,14 @@
 	}
 	*/
 	
-	
-	// dismiss the controller
-	
 	[self dismissModalViewControllerAnimated:YES];
 }
 
 
 - (IBAction)addPhoto:(id)sender {
 	
-	// show action sheet to determine image source
-		
-	// open a dialog with Take Picture, Choose Picture, Cancel
+	// first let the user choose -- shouldn't include Take Picture if no camera...
+
 	UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"Add a photo..."
 															 delegate:self cancelButtonTitle:@"Cancel" 
 											   destructiveButtonTitle:nil otherButtonTitles:@"With Camera", @"Choose From Gallery", nil];
@@ -175,20 +169,18 @@
     else {
         
         // The OLD WAY: create the photo VC
+        // Handling over half-downloaded image arrays is a nightmare and needs to be fixed...
         
         PhotoViewController *photoVC = [[PhotoViewController alloc] initWithNibName:@"PhotoViewController" bundle:nil];
         
-        // pass the array treeImageList and treeThumbnails arrays to the PhotoViewController
         photoVC.treeImageList = self.treeImageList;
         
-        // pass in array of treePhotos
         photoVC.photoArray = self.treePhotos;
         
         // pass in array of Bools (stored as NSNumbers) so the Photo VC knows which still need to be fetched
         photoVC.treePhotosReceived = self.treePhotosReceived;
         
-        // pass the tree id to the Photo VC
-        photoVC.treeID = [[self tree] treeID];    // or is this not needed since we already have the photo URLs?
+        photoVC.treeID = [[self tree] treeID];  // or is this not needed since we already have the photo URLs?
         
         photoVC.treeName = [[self tree] commonName];
         
@@ -208,10 +200,7 @@
 	
 	// Check Reachability first
 	
-	// delete after testing
-	//NetworkStatus status = [[Reachability reachabilityWithHostName:@"pdxtrees.org"] currentReachabilityStatus];
 	NetworkStatus status = [[Reachability reachabilityForInternetConnection] currentReachabilityStatus];
-	
 	
 	/*
 	 enum {
@@ -251,9 +240,7 @@
 		
 		[webVC release];
 	}
-	else {
-
-		// no network
+	else {  // no network
 
 		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Network Connection" 
 														message:@"Sorry, Wikipedia is not accessible. Please try again when you have an internet connection." 
@@ -265,7 +252,6 @@
 		
 	}
 
-	
 }
 
 
@@ -330,8 +316,6 @@
 	
 	
 	// NSLog(@"Processing the image from didFinishPicking...");
-	
-	// once a photo has been created:
 
 	// new in OS 4.1:
 	//NSLog(@"The metadata for the image is: %@", [info objectForKey:UIImagePickerControllerMediaMetadata]);
@@ -339,18 +323,16 @@
 	
 	UIImage *selectedImage = [info objectForKey:UIImagePickerControllerEditedImage];
 	
-	// testing original image to see if it is bigger and better. It was 4mb @ 2592px × 1936px on an iPhone 4. Too big!
+	// Original image is ~ 4mb @ 2592px × 1936px on an iPhone 4. Too big!
 	//UIImage *selectedImage = [info objectForKey:UIImagePickerControllerOriginalImage];
 	
-	// get the documents directory path
+	// get the documents directory path -- needs to change to libary/cache and be cleaned up!
 	
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 	
 	NSString *userDocumentsPath = [paths objectAtIndex:0];
 	
-	// make a photo name based on self.addBoxDateStamp	
-	
-	
+    
 	// generate datestamp string
 	
 	NSDateFormatter *filenameDateFormatter = [[NSDateFormatter alloc] init];
@@ -365,7 +347,7 @@
 	
 	// create the file name and path
 	
-	NSString *imageFilename =  [NSString stringWithFormat:@"tree-%@-%@.jpg", [[tree treeID] stringValue], datestampString];
+	NSString *imageFilename = [NSString stringWithFormat:@"tree-%@-%@.jpg", [[tree treeID] stringValue], datestampString];
 	
 	NSString *saveJPEGPath = [userDocumentsPath stringByAppendingPathComponent:imageFilename];
 	
@@ -463,17 +445,16 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 	
-	// add the share button
 	UIBarButtonItem *shareButton = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction
 																				  target:self
 																				  action:@selector(shareTree:)] autorelease];
 	
 	self.navigationItem.rightBarButtonItem = shareButton;
 	
-	// set UI elements
+	// populate labels with data
 	
-	commonNameLabel.text = [tree commonName];
-	scientificNameLabel.text = [tree scientificName];
+	self.commonNameLabel.text = [tree commonName];
+	self.scientificNameLabel.text = [tree scientificName];
 	
 	// if present, word cap it
 	if ([[tree address] length] > 0) {	
@@ -481,27 +462,25 @@
 		// don't word cap it until you have special handling for NW, NE, SW, SE and ordinal numbers -- see ticket 95
 		//locationNameLabel.text = [[tree address] capitalizedString]; // word cap it
 		
-		locationNameLabel.text = [tree address]; // WARNING: UGLY ALL CAPS IN ORIGINAL DATA
+		self.locationNameLabel.text = [tree address]; // WARNING: UGLY ALL CAPS IN ORIGINAL DATA
 	}
 	
 	else {
 		
-		locationNameLabel.text = @"";
+		self.locationNameLabel.text = @"";
 		
 	}
 
-	
-	// if present, then cap the first letter
 	if ([[tree notes] length] > 0) {
 		
-		
-		notesLabel.text = [[tree notes] stringByReplacingCharactersInRange:NSMakeRange(0, 1) 
-																withString:[[[tree notes] substringToIndex:1] uppercaseString]];
+		// Ugly way to cap the first letter
+		self.notesLabel.text = [[tree notes] stringByReplacingCharactersInRange:NSMakeRange(0, 1) 
+                                                                     withString:[[[tree notes] substringToIndex:1] uppercaseString]];
 	}
 	
 	else {
 		
-		notesLabel.text = @"";
+		self.notesLabel.text = @"";
 		
 	}
 
@@ -509,36 +488,36 @@
 	// Show stats, where available
 	
 	if ([[tree height] doubleValue] > 0.0) {
-		heightLabel.text = [NSString stringWithFormat:@"Height: %1.0f feet", [[tree height] doubleValue]];
+		self.heightLabel.text = [NSString stringWithFormat:@"Height: %1.0f feet", [[tree height] doubleValue]];
 	}
 	else {
-		heightLabel.text = @"Height: Not specified";
+		self.heightLabel.text = @"Height: Not specified";
 	}
 	
 	if ([[tree circumference] doubleValue] > 0.0) {
-		circumferenceLabel.text = [NSString stringWithFormat:@"Circumference: %1.1f feet", [[tree circumference] doubleValue]];
+		self.circumferenceLabel.text = [NSString stringWithFormat:@"Circumference: %1.1f feet", [[tree circumference] doubleValue]];
 	}
 	else {
-		circumferenceLabel.text = @"Circumference: Not specified";
+		self.circumferenceLabel.text = @"Circumference: Not specified";
 	}
 
 	if ([[tree diameter] doubleValue] > 0.0) {
-		diameterLabel.text = [NSString stringWithFormat:@"Diameter: %1.1f inches", [[tree diameter] doubleValue]];
+		self.diameterLabel.text = [NSString stringWithFormat:@"Diameter: %1.1f inches", [[tree diameter] doubleValue]];
 	}
 	else {
-		diameterLabel.text = @"Diameter: Not specified";
+		self.diameterLabel.text = @"Diameter: Not specified";
 	}
 
 	
 	if ([[tree spread] doubleValue] > 0.0) {
-		spreadLabel.text = [NSString stringWithFormat:@"Spread: %1.0f feet", [[tree spread] doubleValue]];
+		self.spreadLabel.text = [NSString stringWithFormat:@"Spread: %1.0f feet", [[tree spread] doubleValue]];
 	}
 	else {
-		spreadLabel.text = @"Spread: Not specified";
+		self.spreadLabel.text = @"Spread: Not specified";
 	}
 
 	
-	yearLabel.text = [NSString stringWithFormat:@"Designated in %d", [[tree yearDesignated] intValue]];  //check format
+	self.yearLabel.text = [NSString stringWithFormat:@"Designated in %d", [[tree yearDesignated] intValue]];  //check format
 	
 	
 	
@@ -547,13 +526,12 @@
 	showImageSubmitNext = NO;
 	self.selectedPhotoPath = @"";
 	
-	// hide image placeholders:
+    // hide image placeholders:
 	
 	image1Button.hidden = YES;
 	image2Button.hidden = YES;
 	image3Button.hidden = YES;
 	image4Button.hidden = YES;
-	
 
 	fetchingLabel.hidden = NO;
 	fetchingSpinner.hidesWhenStopped = YES;
@@ -597,18 +575,12 @@
 	
 	// determine any active requests and cancel them
 	
-	
-	
-	// stop the image list request
-	
+    // NSLog(@"Tree Detail VC: About to cancel all network operations because view is disappearing.");
+    
 	if ([[self imageListRequest] inProgress]) {
 		// cancel it
 		[[self imageListRequest] cancel];
 	}
-	
-	// stop the queue
-	
-	// NSLog(@"Tree Detail VC: About to cancel all network operations because view is disappearing.");
 	
 	[self killQueue];  
 }
@@ -619,7 +591,7 @@
 
 - (void)initPhotoRequests {
     
-    // once PDC tests out, all networking stuff will be removed from this VC
+    // once PhotoDownloadController tests out, all networking stuff will be removed from this VC
     
     if (self.usePhotoDownloadController) {
         
@@ -629,7 +601,7 @@
     
     else {
     
-        // initiate the request for photos in the Old Ways
+        // initiate the request for photos using the Old Ways (i.e. the nightmare...)
         
         // Check Reachability first
         
@@ -693,12 +665,12 @@
 	
 }
 
+//NOTE: This whole method is a horror-show of hackery that will be replaced by the PhotoDownloadController. Soon.
 - (void)requestFinished:(ASIHTTPRequest *)request {
 	
-	// hide the text label that says fetching images...
+	// update UI
 	fetchingLabel.hidden = YES;
-	
-	// stop and hide the activity spinner
+
 	[fetchingSpinner stopAnimating];
 	
 	// handle the response
@@ -720,11 +692,8 @@
 		
 		if ([tempImageList count] > 0 ) {
 			if ([[tempImageList objectAtIndex:0] isKindOfClass:[NSDictionary class]]) {
-
-				// process the array of dictionaries
 				
-				// for looking at the format of the dictionary returned
-				NSLog(@"first dictionary item in temp tree image list: %@", [tempImageList objectAtIndex:0]);
+				//NSLog(@"first dictionary item in temp tree image list: %@", [tempImageList objectAtIndex:0]);
 				
 				self.treeImageList = tempImageList;
 				
@@ -737,17 +706,19 @@
 				
 				
 				// based on the way Page Control SC handles this.
-				// instead of adding nulls, should I just do initWithCapacity? What's the advantage of doing it the Page Control SC way?
+				// instead of adding nulls, just do initWithCapacity? 
+                // What's the advantage of doing it the Page Control SC way?
 				// Decided to init with thumbnail images, which solves problems with bad http requests and scaling nulls later.
 				
 				// insert a locally-loaded place holder icon from the missing image
 				NSString *nullThumbnailPath = [[NSBundle mainBundle] pathForResource:@"null-placeholder50.jpg" ofType:nil];
 				
-				 
+                // Older me says: DON'T fill an array with uncompressed images!!!
 				NSMutableArray *tempThumbnailList = [[NSMutableArray alloc] init];  
 				for (unsigned i = 0; i < imageCount; i++) {
-					//[tempThumbnailList addObject:[NSNull null]];
+
 					[tempThumbnailList addObject:[UIImage imageWithContentsOfFile:nullThumbnailPath]];
+                    
 				}
 				
 
@@ -755,13 +726,10 @@
 
 				[tempThumbnailList release];
 				
-				// NSLog(@"Created an array of %d nulls to hold thumbnails.", [[self treeThumbnails] count]);
-				
-				
 	
 				// initialize the treePhoto array here, with full-size placeholders
 				
-				// NSLog(@"Filling self.treePhotos with placeholder images at 320 pixels.");
+				// Older me says again: DON'T FILL AN ARRAY with uncompressed images!!! What were you thinking?!
 				
 				NSString *nullPhotoPath = [[NSBundle mainBundle] pathForResource:@"na-placeholder-320.jpg" ofType:nil];
 				
@@ -772,7 +740,7 @@
 				
 				for (unsigned i = 0; i < imageCount; i++) {
 					[tempTreePhotos addObject:[UIImage imageWithContentsOfFile:nullPhotoPath]];
-					//[self.treePhotosReceived addObject:notReceived];
+
 					[tempTreePhotoReceivedBOOLs addObject:notReceived];
 				}
 				
@@ -782,12 +750,6 @@
 				
 				[tempTreePhotos release];
 				[tempTreePhotoReceivedBOOLs release];
-				
-				// consolidate the above loops once photos one tests out...
-				
-				
-								
-				
 				
 				// create request queue if it doesn't exist yet
 				
@@ -883,15 +845,13 @@
 
 - (void)requestFailed:(ASIHTTPRequest *)request {
 	
-	// handle the failure in the UI
+	// update UI
 	
 	fetchingLabel.text = @"Images not available.";
-	
-	// stop and hide the activity spinner
+
 	[fetchingSpinner stopAnimating];
 	
 	// Log it
-	
 	NSError *error = [request error];
 	
 	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {  // not an error
@@ -911,8 +871,6 @@
 #pragma mark ASINetworkQueue Delegate Methods aka Photo Downloads
 
 -(void)thumbnailRequestFinished:(ASIHTTPRequest *)request {
-	
-	//process the success  
 
 	// NSLog(@"Thumbnail request finished...");					
 	// NSLog(@"User info was: %@", [request userInfo]);
@@ -970,7 +928,8 @@
 				break;		
 				
 			default:
-				// additional thumbnails
+				
+                // do nothing with additional thumbnails, for now
 				
 				break;
 		}
@@ -982,6 +941,8 @@
 		NSLog(@"The HTTP Status code was: %d", [request responseStatusCode]);
 		
 		NSLog(@"The data returned was %d bytes and looks like: %@", [responseData length], responseData);
+        
+        // don't need to update the UI, because it already has a placeholder
 		
 	}
 
@@ -1017,9 +978,6 @@
 
 -(void)photoRequestFinished:(ASIHTTPRequest *)request {
 	
-	// process the image
-	
-
 	// NSLog(@"Photo request finished...");					
 	// NSLog(@"User info was: %@", [request userInfo]);
 	
@@ -1066,8 +1024,6 @@
 
 -(void)photoRequestFailed:(ASIHTTPRequest *)request {
 	
-	//process the failure
-	
 	NSError *error = [request error];
 	
 	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {  // not an error
@@ -1105,7 +1061,7 @@
 	// to be called on loss of network availability or if leaving this VC
 	
 	// Does it cause any problems to call cancel on an inactive queue?
-	// If so, you could check to see if requestsCount > 0 
+	// Do you need to check if requestsCount > 0 ?
 	
 	if ([self.imageRequestQueue requestsCount] > 0 ) {
         [[self imageRequestQueue] cancelAllOperations];
@@ -1139,14 +1095,25 @@
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
-	
-
-	// NSLog(@"TDVC: Setting arrays to nil");
-	
-    // call killQueue instead so that operations are cancelled first
-	//self.imageRequestQueue = nil;  
     
     [self killQueue];
+    
+    self.scientificNameLabel = nil;
+    self.commonNameLabel = nil;
+    self.locationNameLabel = nil;
+    self.notesLabel = nil;
+    self.heightLabel = nil;
+    self.circumferenceLabel = nil;
+    self.diameterLabel = nil;
+    self.spreadLabel = nil;
+    self.yearLabel = nil;
+    self.addPhotoButton = nil;
+    self.image1Button = nil;
+    self.image2Button = nil;
+    self.image3Button = nil;
+    self.image4Button = nil;
+    self.fetchingLabel = nil;
+    self.fetchingSpinner = nil;
 	
 	self.treeThumbnails = nil;
 	

@@ -36,15 +36,13 @@
 
 @interface Tree :  NSManagedObject  
 {
-	//required 
-	
+	// required 
 	NSNumber *treeID;
 	NSNumber *latitude;
 	NSNumber *longitude;
 	NSDate *lastEditDate;
 	
 	// optional
-	
 	NSString *address;
 	NSNumber *circumference;
 	NSString *commonName;

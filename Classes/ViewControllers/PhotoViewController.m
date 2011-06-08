@@ -67,11 +67,15 @@
 */
 
 
-// Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
+// NOTE: Like the TreeDetailViewController, this one will be de-networked once I implement PhotoDownloadController.
+// Meanwhile, it's a duplication of the mess in TDVC.
 - (void)viewDidLoad {
     [super viewDidLoad];
 	
 
+    // BEGIN DEMOLITION AREA (for image requests, that is)
+    
+    
 	// start requests for images here, based on treeImageList
 
 	// create request queue if it doesn't exist yet
@@ -118,7 +122,7 @@
 		
 		photoIndex++;
 		
-		// Open this up in future versions, pending more intensive memory testing.
+		// Open this up in future versions, pending more extensive memory testing.
 		if (photoIndex >= 6) {
 			break;
 		}
@@ -131,10 +135,12 @@
 		// NSLog(@"Starting queue");				
 		[[self imageRequestQueue] go];
 	}
-	
 
-	
-	
+    // END DEMOLITION AREA
+    
+    
+    
+    // Photo Display code
 	
 	// get count of photos
 	NSUInteger pageCount = [[self photoArray] count];
@@ -174,8 +180,9 @@
     // need to load images and scroll to the currentPage
     
     [self changePage:self];
-     
-	// add flag button and connect to its selector
+
+    
+	// configure the chrome
 
 	UIBarButtonItem *flagButton = [[UIBarButtonItem alloc] initWithTitle:@"Flag"  
 																	style:UIBarButtonItemStyleBordered 
@@ -193,32 +200,17 @@
 
 -(void)viewWillDisappear:(BOOL)animated {
 	
-    // 110505: this should go away once image load is handed off, right?
+	// check on the flag request and the image queue
+		
+    if ([[self flagRequest] inProgress]) {
+        
+        [[self flagRequest] cancel];
+    }
     
-	// this gets called just after viewDidLoad, when the Captioned Image VC takes over, and again when the user taps back to return to TDVC
-	// Only kill the queue when headed back to the TDVC
-
-	NSLog(@"Photo VC viewWillDisappear: class of top view controller is %@", [[[self navigationController] topViewController] class]);
-	
-    /*
-    
-	if ([[[self navigationController] topViewController] isKindOfClass:[TreeDetailViewController class]]) {
-
-		// check on the flag request
+    // unintentional iambic pentameter log message needs a rhyming partner...
+    // NSLog(@"About to make the call to kill the queue"); // quit downloads for a disappearing view?
+    [self killQueue];
 		
-		if ([[self flagRequest] inProgress]) {
-			
-			[[self flagRequest] cancel];
-		}
-		
-		// kill the queue
-		
-		// unintentional iambic pentameter log message needs a rhyming partner...
-		// NSLog(@"About to make the call to kill the queue"); 
-		[self killQueue];
-		
-	}
-	*/
 }
 
 #pragma mark -
@@ -314,8 +306,6 @@
     
     for (CaptionedImageView *capView in visiblePhotos) {
         
-        
-        
         if (capView.index < firstPhotoNeeded || capView.index > lastPhotoNeeded) {
             NSLog(@"capView index %d will be recycled", capView.index);
             [recycledPhotos addObject:capView];
@@ -387,10 +377,10 @@
     [self updatePhotosForScrollViewPosition];
     
 	// update the scroll view to the appropriate page
-    CGRect frame = scrollView.frame;
+    CGRect frame = self.scrollView.frame;
     frame.origin.x = frame.size.width * self.pageControl.currentPage;
     frame.origin.y = 0;
-    [scrollView scrollRectToVisible:frame animated:YES];
+    [self.scrollView scrollRectToVisible:frame animated:YES];
     
 	// Set the boolean used when scrolls originate from the UIPageControl. See scrollViewDidScroll: above.
     pageControlUsed = YES;
@@ -412,9 +402,7 @@
 
 - (void)flagPhotoByEmail {
 
-	if ([MFMailComposeViewController canSendMail]) {  //verify that mail is configured on the device
-		
-		//present the mail window with boilerplate
+	if ([MFMailComposeViewController canSendMail]) {
 		
 		MFMailComposeViewController *mailVC = [[MFMailComposeViewController alloc] init];
 		
@@ -459,10 +447,6 @@
 
 - (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error {
 	
-	
-	// test for each outcome
-	
-
 	/*
 	switch (result)
 	{
@@ -483,8 +467,6 @@
 			break;
 	}
 	*/
-	
-	// dismiss the controller
 	
 	[self dismissModalViewControllerAnimated:YES];
 } 
@@ -564,6 +546,7 @@
 		}
 		
 	}
+    
 }
 
 
@@ -581,8 +564,8 @@
 	NSLog(@"The HTML returned: %@", responseString);
 	*/
 	
-	// Notify user here? Or assume they don't want to look at the photo anymore, and more them to another photo or back to TDVC?
-	
+	// Notify user here? Or assume they don't want to look at the photo anymore, and move them to another photo or back to TDVC?
+	// No one even uses this feature...
 	
 }
 

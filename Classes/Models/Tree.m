@@ -42,7 +42,7 @@
 @dynamic latitude;
 @dynamic longitude;
 
-//optional
+// optional
 @dynamic spread;
 @dynamic circumference;
 @dynamic diameter;

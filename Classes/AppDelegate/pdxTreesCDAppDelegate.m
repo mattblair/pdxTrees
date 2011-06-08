@@ -62,11 +62,8 @@
     // Override point for customization after application launch.
 	
 	
-	// fetch data here during development
-	//NSLog(@"Preparing to import tree list...");
-	
+	// Import data here during development
 	//[self importTreeDetails];
-	
 	
 
     // Add the navigation controller's view to the window and display.
@@ -270,24 +267,19 @@
 	NSArray *treeDetailArray = [self readTreeDetailsFromJSONFile];
 	
 	for (NSDictionary *treeDict in treeDetailArray) {
-
-		// create a new tree record
-		
+	
 		Tree *newTree = nil;
 		
 		newTree = (Tree *)[NSEntityDescription insertNewObjectForEntityForName:@"Tree" 
 														inManagedObjectContext:[self managedObjectContext]];
 		
-		// set required values
-		
-		
-		// NSNumber *treeID;
+		// required values
 		
 		[newTree setTreeID:[NSNumber numberWithInt:[[treeDict valueForKey:@"treeid"] intValue]]];
 		
 		NSLog(@"Processing Tree number: %@", newTree.treeID);
 		
-		// Reach in for the latitude and longitude
+		// latitude and longitude are nested in the geometry key
 		NSDictionary *geometryDict = [treeDict valueForKey:@"geometry"];
 		
 		NSArray *coordArray = [geometryDict valueForKey:@"coordinates"];
@@ -300,8 +292,6 @@
 		
 		// NSDate *lastEditDate;
 		[newTree setLastEditDate:[NSDate date]];
-		
-		
 		
 		
 		
@@ -331,13 +321,12 @@
 		[newTree setSpread:[NSNumber numberWithDouble:[[treeDict valueForKey:@"spread"] doubleValue]]];
 		
 		// NSString *notes;
-		
-		if (![[treeDict valueForKey:@"notes"] isKindOfClass:[NSNull class]]) {   // if it's not null
-			[newTree setNotes:[treeDict valueForKey:@"notes"]];  //it'd be nice to cap this here...
+		if (![[treeDict valueForKey:@"notes"] isKindOfClass:[NSNull class]]) { 
+			[newTree setNotes:[treeDict valueForKey:@"notes"]];  //it'd be nice to sentence-cap this here...
 		}
 		
 		// NSString *ownerName;
-		if (![[treeDict valueForKey:@"owner"] isKindOfClass:[NSNull class]]) {   // if it's not null
+		if (![[treeDict valueForKey:@"owner"] isKindOfClass:[NSNull class]]) {
 			[newTree setOwnerName:[treeDict valueForKey:@"owner"]];
 		}
 		
@@ -345,7 +334,7 @@
 		[newTree setScientificName:[treeDict valueForKey:@"scientific"]];
 		
 		// NSString *stateID;
-		if (![[treeDict valueForKey:@"stateid"] isKindOfClass:[NSNull class]]) {   // if it's not null
+		if (![[treeDict valueForKey:@"stateid"] isKindOfClass:[NSNull class]]) {
 			[newTree setStateID:[treeDict valueForKey:@"stateid"]];
 		}
 		
@@ -354,14 +343,12 @@
 		
 		
 		// save it
-		
 		NSError *error;
 		if (![[self managedObjectContext] save:&error]) {
 			NSLog(@"Error adding tree - error:%@",error);
 			break;
 		}
-		
-		
+			
 		
 	}
 	
