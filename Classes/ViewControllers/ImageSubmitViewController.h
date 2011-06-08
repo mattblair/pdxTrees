@@ -43,14 +43,12 @@
 @interface ImageSubmitViewController : UIViewController <UITextFieldDelegate, MFMailComposeViewControllerDelegate> {
 	
 	// data
-	
 	Tree *tree;
 	NSString *localPhotoPath;
     NSString *submitterName;
     NSString *submitterEmail;
 	
 	// UI
-	
 	UITextField *captionTextField;
 	UITextField *nameTextField;
 	UITextField *emailTextField;
@@ -84,14 +82,12 @@
 }
 
 // data
-
 @property (nonatomic, retain) Tree *tree;
 @property (nonatomic, copy) NSString *localPhotoPath;
 @property (nonatomic, copy) NSString *submitterName;
 @property (nonatomic, copy) NSString *submitterEmail;
 
 // UI
-
 @property(nonatomic, retain) IBOutlet UITextField *captionTextField;
 @property(nonatomic, retain) IBOutlet UITextField *nameTextField;
 @property(nonatomic, retain) IBOutlet UITextField *emailTextField;
@@ -110,7 +106,7 @@
 // temporary -- for field testing only
 @property (nonatomic, retain) IBOutlet UISwitch *useCouchSwitch;
 
-@property(nonatomic, retain) id <ImageSubmitDelegate> delegate;
+@property(nonatomic, retain) id <ImageSubmitDelegate> delegate;  // should be assign, right?
 
 @property(retain) ASIFormDataRequest *imageSubmitRequest;
 

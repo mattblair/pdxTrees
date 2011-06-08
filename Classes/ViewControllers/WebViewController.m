@@ -55,6 +55,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 	
+    self.theWebView.delegate = self; 
+    
 	// Observe the kNetworkReachabilityChangedNotification. When that notification is posted, the
     // method "reachabilityChanged" will be called. 
     [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachabilityChanged:) name: kReachabilityChangedNotification object: nil];
@@ -65,29 +67,24 @@
 	
 	if ([self aboutMode]) {
 		
-		// we want these kinds of pages to scale:
-		
+		// These kinds of pages should scale:
 		theWebView.scalesPageToFit = YES;
-		
-		// setup the about request here
 		
 		self.navigationItem.title = @"About";
 		
 		NSString *localAboutHTML = [[NSBundle mainBundle] pathForResource:@"about" ofType:@"html"];
 		NSURL *url = [NSURL fileURLWithPath:localAboutHTML];
 		
-		// NSLog(@"About to request the URL: %@", localAboutHTML);
-		
 		NSURLRequest *request = [NSURLRequest requestWithURL:url];
 		
 		[theWebView loadRequest:request];
 		
 	}
+    
 	else {
 		
 		//handle the wiki request
 
-		// set the title
 		self.navigationItem.title = @"Wikipedia";
 		
 		//The test url
@@ -115,12 +112,10 @@
 											[NSArray arrayWithObjects:
 											 [UIImage imageNamed:@"back-dingy"],
 											 [UIImage imageNamed:@"fwd-dingy"],
-											 //@"Back",
-											 //@"Fwd",
 											 nil]];
 	
 	[segmentedControl addTarget:self action:@selector(navigateWebView:) forControlEvents:UIControlEventValueChanged];
-	segmentedControl.frame = CGRectMake(0, 0, 90, 30);  // was kCustomButtonHeight
+	segmentedControl.frame = CGRectMake(0, 0, 90, 30);  // was kCustomButtonHeight, but I want it more squat
 	segmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
 	segmentedControl.momentary = YES;
 	
@@ -130,8 +125,7 @@
 	[segmentedControl release];
 	
 	self.navigationItem.rightBarButtonItem = segmentBarItem;
-	[segmentBarItem release];
-	
+	[segmentBarItem release];	
 
 }
 
@@ -150,7 +144,7 @@
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
 	
-	// Some of those wikipedia pages seem to be relatively fat
+	// Some of those wikipedia pages seem to be relatively chunky
 	NSLog(@"WebViewController received memory warning...");
     
     // Release any cached data, images, etc that aren't in use.
@@ -161,20 +155,15 @@
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
 	
+    self.theWebView = nil;
+    
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-
-- (void)viewWillAppear:(BOOL)animated
-{
-	self.theWebView.delegate = self; // set delegate so callbacks can manage button state
 }
 
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [self.theWebView stopLoading];	// in case the web view is still loading its content
-	self.theWebView.delegate = nil;	// disconnect the delegate as the webview is hidden
 	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 }
 
@@ -193,8 +182,6 @@
 #pragma mark Reachability Handling
 
 -(void)reachabilityChanged: (NSNotification* )note {
-
-	// respond to changes in reachability
 	
 	Reachability *currentReach = [note object];
 	
@@ -252,7 +239,6 @@
 	}
 	*/
 	
-	
 	if (status == kReachableViaWiFi || status == kReachableViaWWAN) { 
 		return YES;
 	}
@@ -279,7 +265,6 @@
 			
 			return NO;
 		}
-		
 		
 	}
 

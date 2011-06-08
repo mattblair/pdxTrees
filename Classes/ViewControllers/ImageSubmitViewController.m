@@ -66,6 +66,7 @@
 	// to prevent double-taps
 	saveButton.enabled = NO; 
 	
+    // and keyboard appearing:
 	self.captionTextField.enabled = NO;
 	self.nameTextField.enabled = NO;
 	self.emailTextField.enabled = NO;
@@ -93,7 +94,6 @@
         }
         
         self.submitterName = [[nameTextField text] substringToIndex:maxLength];
-
         
 		[[NSUserDefaults standardUserDefaults] setObject:submitterName forKey:@"displayName"];
 		
@@ -127,17 +127,10 @@
 		
         NSLog(@"Newly stored name and email are: %@, %@", [[NSUserDefaults standardUserDefaults] stringForKey:@"displayName"], [[NSUserDefaults standardUserDefaults] stringForKey:@"emailAddress"]);
 	}
-	/*
-     else {
-     NSLog(@"Fields not remembered.");  //else statement for testing only -- can delete
-     }
-     */
-    
     
     // Check Reachability first
 	
 	// don't use a host check on the main thread because of possible DNS delays...
-    
 	NetworkStatus status = [[Reachability reachabilityForInternetConnection] currentReachabilityStatus];
 	
 	/*
@@ -164,30 +157,29 @@
 	
 	if (status == kReachableViaWiFi || status == kReachableViaWWAN) { 
         
-        
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachabilityChanged:) name: kReachabilityChangedNotification object: nil];
 		
 		internetReach = [[Reachability reachabilityForInternetConnection] retain];
 		[internetReach startNotifier];
-		
         
 		// indicate the submission process is starting
 		[self.submittingSpinner startAnimating];
-    
         
         
         // this is a temporary conditional for a/b testing in the field
         
         if (self.useCouchSwitch.on) {
-            //use couch
             
+            //use couch
             self.sendToCouch = YES;
             [self submitPhotoMetadataToCouch];
+            
         }
         else {
             
             self.sendToCouch = NO;
             [self submitPhotoViaDjango];
+            
         }
     
     
@@ -197,9 +189,7 @@
         
         // detecting offline mode
         // NSLog(@"Image Submit: No network access.");
-        
-        // add email submit here.
-        
+                
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Connection" 
                                                         message:@"The internet is not available. Would you like to add the image to a draft email to send later?" 
                                                        delegate:self 
@@ -208,10 +198,8 @@
         [alert show];
         [alert release];
         
-        
     }
     
-
 }
 
 -(IBAction)cancelPhoto:(id)sender {
@@ -220,7 +208,7 @@
 	
 	// NSLog(@"User cancelled the photo submission in the Image Submit VC.");
 	
-	[self killRequest];  // in case it is still running
+	[self killRequest];
 	
 	[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO];
 	
@@ -229,7 +217,6 @@
 
 -(void)submitPhotoViaDjango {	
 	
-			
     //configure url and request -- v1.1: build from RESTConstants.h values
     
     NSString *authPostURL = [NSString stringWithFormat:@"http://%@:%@@%@", kAPIUsername,kAPIPassword,kAPIHostAndPath];
@@ -255,15 +242,14 @@
         // device code:
         
         // need to slice up path and file name: 
-        
         NSArray *photoPathArray = [localPhotoPath pathComponents];
         
         NSLog(@"The photoPathArray is: %@", photoPathArray);
         
         [[self imageSubmitRequest] setFile:localPhotoPath
-            withFileName:[photoPathArray lastObject]  // last object in pathComponents is the filename
-          andContentType:@"image/jpeg" 
-                  forKey:@"image"];
+                              withFileName:[photoPathArray lastObject]  // last object in pathComponents is the filename
+                            andContentType:@"image/jpeg" 
+                                    forKey:@"image"];
     }
     
     
@@ -287,7 +273,7 @@
 
     
     
-    // optional fields: server will validate. Just truncate to server field limits
+    // optional fields: server will validate. Just truncate to server field limits...
     
     // caption (TextField -- can be long)
     if ([[captionTextField text] length] > 0) {
@@ -296,77 +282,32 @@
 
     }
     
-    // I moved the truncation code up to the IBAction, so just set values here:
-    
+    // I moved the truncation code up to the submitPhoto: method, so just set values from ivars here:    
     [[self imageSubmitRequest] setPostValue:self.submitterName forKey:@"submitter_name"];
 
     [[self imageSubmitRequest] setPostValue:self.submitterEmail forKey:@"submitter_email"];
     
-    // delete after test:
-    
-    /*
-
-    NSUInteger maxLength = 0;
-
-    // submitter_name (100)
-    
-    if ([[nameTextField text] length] > 0) {
-        
-        if ([[nameTextField text] length] > 100) {
-            maxLength = 100;
-        }
-        else {
-            maxLength = [[nameTextField text] length];
-        }
-
-        [[self imageSubmitRequest] setPostValue:[[nameTextField text] substringToIndex:maxLength] forKey:@"submitter_name"];
-        
-    } 
-    
-    // submitter_email -- validated server-side (150)
-    
-    if ([[emailTextField text] length] > 0) {
-        
-        if ([[emailTextField text] length] > 150) {
-            maxLength = 150;
-        }
-        else {
-            maxLength = [[emailTextField text] length];
-        }
-
-        [[self imageSubmitRequest] setPostValue:[[emailTextField text] substringToIndex:maxLength] forKey:@"submitter_email"];
-        
-    }
-    
-    */
     // submitter_url (not implemented yet)
-
     
-    // start request
-    
+    // start request    
     [[self imageSubmitRequest] setDelegate:self];
     
     // commented to add it to the queue instead
     NSLog(@"Starting the async upload to Django");
     [[self imageSubmitRequest] startAsynchronous];
-		
 
 }
 
 
 - (void)submitPhotoByEmail {
 	
-	if ([MFMailComposeViewController canSendMail]) {  //verify that mail is configured on the device
-			
-		
-		// related_tree_id
+	if ([MFMailComposeViewController canSendMail]) {
 		
 		NSString *treeIDString = [NSString stringWithFormat:@"Related Tree ID: %d", [[tree treeID] integerValue]];
-		
-		// related_tree_couch_id
+
 		NSString *treeCouchIDString = [NSString stringWithFormat:@"Related Tree Couch ID: %@", [tree couchID]];
 		
-		// optional fields: server will validate. just truncate to server field limits
+		// optional fields: Admin will validate.
 		
 		NSString *captionString;
 		
@@ -379,9 +320,7 @@
 			captionString = @"Caption: none";
 		}
 
-			
-		// submitter_name (100)
-		
+		// submitter_name (100)		
 		NSString *nameString;
 		
 		if ([[nameTextField text] length] > 0) {
@@ -396,7 +335,6 @@
 
 		// no need to add email since this will be sent by email...
         // ...or should it be added here if different from system? probably not worth the checking...
-		 
 		
 		MFMailComposeViewController *mailVC = [[MFMailComposeViewController alloc] init];
 		
@@ -410,8 +348,7 @@
 		
 		 
 		if ([[self localPhotoPath] length] > 0) {
-			 
-			 
+            
 			// need to slice path and file name: 
 			 
 			NSArray *photoPathArray = [localPhotoPath pathComponents];
@@ -420,17 +357,15 @@
 			 
 			// the way it is added to the form request, for reference:
 			//[request setFile:localPhotoPath
-			//	 withFileName:[photoPathArray lastObject]  // last object in pathComponents is the filename
-			//   andContentType:@"image/jpeg" 
-			//		   forKey:@"image"];
+			//	  withFileName:[photoPathArray lastObject]  // last object in pathComponents is the filename
+			//  andContentType:@"image/jpeg" 
+			//	        forKey:@"image"];
 			
 			[mailVC addAttachmentData:[NSData dataWithContentsOfFile:[self localPhotoPath]] mimeType:@"image/jpeg" fileName:[photoPathArray lastObject]];
 			
 		}
 		 
-		 
 		[self presentModalViewController:mailVC animated:YES];
-		
 	
 	}
 	
@@ -465,7 +400,6 @@
 	// NSString *responseString = [request responseString];
 	// NSLog(@"The Image Submit HTTP Status code was: %d", [request responseStatusCode]);
 	// NSLog(@"The Image Submit response was: %@", responseString);
-	
 	
 	[submittingSpinner stopAnimating];
 	
@@ -508,7 +442,7 @@
 	if (([error code] == 4) && ([[error domain] isEqualToString:@"ASIHTTPRequestErrorDomain"])) {  // not an error
 		NSLog(@"Cancellation initiated by Reachability notification or directly by user.");
 		
-		// Keep this here in case design changse. 
+		// Keep this here in case of design change. 
         // Cancel button has its own call to this, as does No to email Alert View
         
 		// return to TDVC for notification (was at bottom of method)
@@ -572,9 +506,7 @@
     [photoSubmitRequest setRequestMethod:@"POST"];
     
     [photoSubmitRequest addRequestHeader:@"Content-Type" value:@"application/json"];
-    
-    // load the real data
-    
+       
     NSString *theDateStamp = [NSDateFormatter localizedStringFromDate:[NSDate date] dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle];
 
     // Captured by Django: PDX Trees 1.0.0 rv:11 (iPhone; iPhone OS 4.3.2; en_US) -- need region with language?
@@ -590,7 +522,7 @@
                               [[NSLocale preferredLanguages] objectAtIndex:0]];
     
     // need to test caption for empty?
-    // need to truncate name and email, or just edit submissions?
+    // need to truncate name and email, or just edit submissions as they arrive?
     
     NSDictionary *photoMetadataDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                        [tree treeID], kPhotoRelatedTreeIDKey,
@@ -675,9 +607,6 @@
         [imagePUTRequest addRequestHeader:@"Content-Type" value:@"image/jpeg"];
         
         // add image as data binary
-        
-        //NSString *thePhotoPath = [[NSBundle mainBundle] pathForResource:@"null-placeholder320.jpg" ofType:nil];
-        
         [imagePUTRequest setPostBodyFilePath:localPhotoPath];
         
         [imagePUTRequest setShouldStreamPostDataFromDisk:YES];
@@ -710,8 +639,6 @@
         
     }
     
-    
-    
 }
 
 - (void)couchMetadataPOSTRequestFailed:(ASIHTTPRequest *)request {
@@ -731,7 +658,6 @@
     
     [alert show];
     [alert release];
-    
     
 }
 
@@ -785,7 +711,6 @@
     [alert show];
     [alert release];
     
-    
 }
 
 
@@ -793,8 +718,6 @@
 #pragma mark Reachability Handling
 
 -(void)reachabilityChanged: (NSNotification* )note {
-	
-	// respond to changes in reachability
 	
 	Reachability *currentReach = [note object];
 	
@@ -835,8 +758,6 @@
 		
 		if (buttonIndex == 1) {  // they clicked Yes
 			
-			// show the email option
-			
 			// NSLog(@"User chose to submit by email.");
 			[self submitPhotoByEmail];
 			
@@ -848,8 +769,9 @@
 			// NSLog(@"User chose cancel on send by email alert view.");
 			[delegate imageSubmitViewControllerDidFinish:self withSubmission:NO];
 		}
-	}
 	
+    }
+
 }
 
 
@@ -893,12 +815,7 @@
 		}
 	}
 	
-	
-	// dismiss the controller
-	
 	[self dismissModalViewControllerAnimated:YES];
-	
-	// show thank you here
 	
 	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Thank You" 
 													message:messageString
@@ -912,7 +829,7 @@
 
 
 #pragma mark -
-#pragma mark Text Field Delegate
+#pragma mark Keyboard Management aka Text Field Delegate methods
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {	
 	[textField resignFirstResponder];
@@ -920,20 +837,13 @@
 }
 
 
-//---when a TextField view begins editing---
 -(void) textFieldDidBeginEditing:(UITextField *)textFieldView {  
     currentTextField = textFieldView;
 }  
 
-//---when a TextField view is done editing---
 -(void) textFieldDidEndEditing:(UITextField *) textFieldView {  
     currentTextField = nil;
 }
-
-
-
-
-
 
 
 #pragma mark -
@@ -942,9 +852,7 @@
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];
-		
-	// load image
-	
+
 	self.theImageView.image = [UIImage imageWithContentsOfFile:self.localPhotoPath];
 	
 	// re-populate the name and email fields
@@ -965,6 +873,8 @@
 	// set creative commons description
 	
 	self.ccExplainerLabel.text = @"We use the Creative Commons Attribution-Share-Alike license for all submitted photos. You can learn more about it at creativecommons.org.";
+    
+    // add background image here? Or in NIB?
     
 }
 
