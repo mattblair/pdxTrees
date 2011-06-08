@@ -77,7 +77,7 @@
 	ASINetworkQueue *imageRequestQueue;
     BOOL usePhotoDownloadController;  // temporary -- for field testing only
 	
-	BOOL showImageSubmitNext; // to manage the display of ImageSubmit VC after an image is selected
+	BOOL showImageSubmitNext; // old way of managing the display of ImageSubmit VC after an image is selected
 	NSString *selectedPhotoPath;
 }
 
@@ -133,6 +133,9 @@
 
 // mail delegate
 - (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error;
+
+// allow for delay because of modal dismiss/present rhythm
+- (void)showImageSubmitter;
 
 // ImageSubmitDelegate
 - (void)imageSubmitViewControllerDidFinish:(ImageSubmitViewController *)controller withSubmission:(BOOL)photoSubmitted;

@@ -285,6 +285,8 @@
 	}
 	
 	[self presentModalViewController:picker animated:YES];
+    
+    [picker release];
 		
 }
 
@@ -296,7 +298,7 @@
 	
 	// get rid of the modal view
 	[self dismissModalViewControllerAnimated:YES];
-	[picker release];
+	//[picker release];
 	
 	/*
 	 keys of info dictionary:
@@ -351,6 +353,8 @@
 	
 	NSString *saveJPEGPath = [userDocumentsPath stringByAppendingPathComponent:imageFilename];
 	
+    NSLog(@"saveJPEGPath generated as: %@", saveJPEGPath);
+    
 	NSData *imageData = UIImageJPEGRepresentation(selectedImage, 1.0);
 	
 	
@@ -372,12 +376,13 @@
 	NSLog(@"Documents directory: %@", [fileMgr contentsOfDirectoryAtPath:userDocumentsPath error:&error]);
 	*/
 
-	
-	// indicate that Image Submit should be next:
-	
-	showImageSubmitNext = YES;
 	self.selectedPhotoPath = saveJPEGPath;
 	
+    // Delay to deconflict with dismissal of image picker
+    // Without a delay, Image Submit VC never appears
+    // Is .5 long enough? Test on older devices
+    [self performSelector:@selector(showImageSubmitter) withObject:nil afterDelay:0.5f];
+    
 }
 
 
@@ -386,27 +391,37 @@
 	//decided not to add a photo, apparently
 		
 	[self dismissModalViewControllerAnimated:YES];	
-	[picker release];
 
-	
-	showImageSubmitNext = NO;
-	self.selectedPhotoPath = @"";
+    self.selectedPhotoPath = nil;
 }
 
-
+- (void)showImageSubmitter {
+    
+    // Moved from viewWillAppear, where it was triggered by showImageSubmitNext
+    // I originally put it there so it wouldn't be presented until dismissal of image picker was complete.
+    // It's cleaner to put it here, and call it with a half second delay. Might need longer delay on older devices?
+    
+    ImageSubmitViewController *imageSubmitVC = [[ImageSubmitViewController alloc] initWithNibName:@"ImageSubmitViewController" bundle:nil];
+    
+    imageSubmitVC.tree = self.tree;
+    
+    imageSubmitVC.localPhotoPath = self.selectedPhotoPath;
+    
+    imageSubmitVC.delegate = self;
+    
+    [self presentModalViewController:imageSubmitVC animated:YES];
+    
+    [imageSubmitVC release];
+    
+}
 
 #pragma mark -
 #pragma mark Image Submit Delegate
 
 - (void)imageSubmitViewControllerDidFinish:(ImageSubmitViewController *)controller withSubmission:(BOOL)photoSubmitted {
-	
-	
-	// prevent re-display of the image submit screen
-	
-	showImageSubmitNext = NO;
-	self.selectedPhotoPath = @"";
-	
-	// dimiss the controller, thank the user if needed
+    
+    self.selectedPhotoPath = nil;
+
 	
 	if (photoSubmitted) {
 		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Thank You" 
@@ -421,7 +436,6 @@
 	
 	
 	[self dismissModalViewControllerAnimated:YES];	
-
 	
 }
 
@@ -520,14 +534,11 @@
 	self.yearLabel.text = [NSString stringWithFormat:@"Designated in %d", [[tree yearDesignated] intValue]];  //check format
 	
 	
-	
 	// photo management
 	
-	showImageSubmitNext = NO;
-	self.selectedPhotoPath = @"";
+    self.selectedPhotoPath = nil;
 	
     // hide image placeholders:
-	
 	image1Button.hidden = YES;
 	image2Button.hidden = YES;
 	image3Button.hidden = YES;
@@ -539,37 +550,6 @@
     [self initPhotoRequests];
 	
 }
-
-- (void)viewDidAppear:(BOOL)animated {
-	[super viewDidAppear:animated];
-	
-	if (showImageSubmitNext && [[self selectedPhotoPath] length] > 0) {   // added photo && showImageSubmitNext
-		
-		// create the Image Submit VC
-		 
-		ImageSubmitViewController *imageSubmitVC = [[ImageSubmitViewController alloc] initWithNibName:@"ImageSubmitViewController" bundle:nil];
-		
-		
-		// configure it
-		 
-		imageSubmitVC.tree = self.tree;
-		 
-		 
-		imageSubmitVC.localPhotoPath = self.selectedPhotoPath;
-		 
-		imageSubmitVC.delegate = self;
-		 
-		// show it modally
-		 
-		[self presentModalViewController:imageSubmitVC animated:YES];
-		 
-		[imageSubmitVC release];
-		
-	}
-	
-	
-}
-
 
 -(void)viewWillDisappear:(BOOL)animated {
 	

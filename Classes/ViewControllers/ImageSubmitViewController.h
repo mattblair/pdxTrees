@@ -106,7 +106,7 @@
 // temporary -- for field testing only
 @property (nonatomic, retain) IBOutlet UISwitch *useCouchSwitch;
 
-@property(nonatomic, retain) id <ImageSubmitDelegate> delegate;  // should be assign, right?
+@property(nonatomic, assign) id <ImageSubmitDelegate> delegate;  // was retain, but that's wrong
 
 @property(retain) ASIFormDataRequest *imageSubmitRequest;
 
