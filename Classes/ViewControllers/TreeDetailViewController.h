@@ -35,6 +35,8 @@
 #import <MessageUI/MessageUI.h>  // for email sharing
 #import "Tree.h"
 #import "ImageSubmitViewController.h"
+#import "TreePhoto.h"
+#import "TreePhotoDownloadController.h"
 
 @class ASIHTTPRequest;
 @class ASINetworkQueue;
@@ -45,11 +47,17 @@
 	// Data
 	Tree *tree;
 	
+    // Photo fetching -- to be replaced
 	NSMutableArray *treeImageList;
 	NSMutableArray *treeThumbnails;
 	NSMutableArray *treePhotos;	
 	NSMutableArray *treePhotosReceived;
+    
+    // Photo fetching -- new way
+    TreePhotoDownloadController *treePhotoDC;
 	
+    NSUInteger photoCount;
+    
 	// Detail Display UI
 	UILabel *commonNameLabel;
 	UILabel *scientificNameLabel;
@@ -75,9 +83,10 @@
 	// Manage Requests
 	ASIHTTPRequest *imageListRequest;
 	ASINetworkQueue *imageRequestQueue;
+    
     BOOL usePhotoDownloadController;  // temporary -- for field testing only
 	
-
+    // for photo submission
 	NSString *selectedPhotoPath;
 	
     // old way of managing the display of ImageSubmit VC after an image is selected
@@ -88,10 +97,19 @@
 // Data
 
 @property (nonatomic, retain) Tree *tree;
+
+// Photo fetching -- to be replaced
 @property (nonatomic, retain) NSMutableArray *treeImageList;
 @property (nonatomic, retain) NSMutableArray *treeThumbnails;
 @property (nonatomic, retain) NSMutableArray *treePhotos;	
 @property (nonatomic, retain) NSMutableArray *treePhotosReceived;
+
+// Photo fetching -- new way
+@property (nonatomic, retain) TreePhotoDownloadController *treePhotoDC;
+
+@property (nonatomic) NSUInteger photoCount;
+
+// for photo submission
 @property (nonatomic, copy) NSString *selectedPhotoPath;
 
 // Detail Display UI
@@ -134,6 +152,14 @@
 - (IBAction)addPhoto:(id)sender;
 - (IBAction)viewPhotos:(id)sender;
 - (IBAction)showWikipedia:(id)sender;
+
+// handling notifications from Tree Photo Download Controller
+
+- (void)displayOfflineUI:(NSNotification* )note;
+
+- (void)updatePhotoCountAndLabel:(NSNotification* )note;
+
+- (void)loadThumbnail:(NSNotification* )note;
 
 // mail delegate
 - (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error;

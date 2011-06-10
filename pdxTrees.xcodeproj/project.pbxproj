@@ -16,6 +16,8 @@
 		C9155B481245B09900076F95 /* 74-location-invert.png in Resources */ = {isa = PBXBuildFile; fileRef = C9155B461245B09900076F95 /* 74-location-invert.png */; };
 		C9155B491245B09900076F95 /* 74-location-invert@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C9155B471245B09900076F95 /* 74-location-invert@2x.png */; };
 		C9155B7E1245BFBD00076F95 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9155B7D1245BFBD00076F95 /* MessageUI.framework */; };
+		C94B579113A0301800F28FD5 /* TreePhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = C94B579013A0301800F28FD5 /* TreePhoto.m */; };
+		C94B579413A03E8E00F28FD5 /* TreePhotoDownloadController.m in Sources */ = {isa = PBXBuildFile; fileRef = C94B579313A03E8E00F28FD5 /* TreePhotoDownloadController.m */; };
 		C954B0C512FCC62E0042B563 /* RESTConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = C954B0C412FCC62E0042B563 /* RESTConstants.m */; };
 		C95B84E81257E55A00B22E7E /* ASIAuthenticationDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = C95B84D71257E55A00B22E7E /* ASIAuthenticationDialog.m */; };
 		C95B84E91257E55A00B22E7E /* ASIDownloadCache.m in Sources */ = {isa = PBXBuildFile; fileRef = C95B84DA1257E55A00B22E7E /* ASIDownloadCache.m */; };
@@ -84,6 +86,10 @@
 		C9155B461245B09900076F95 /* 74-location-invert.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "74-location-invert.png"; sourceTree = "<group>"; };
 		C9155B471245B09900076F95 /* 74-location-invert@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "74-location-invert@2x.png"; sourceTree = "<group>"; };
 		C9155B7D1245BFBD00076F95 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		C94B578F13A0301800F28FD5 /* TreePhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TreePhoto.h; sourceTree = "<group>"; };
+		C94B579013A0301800F28FD5 /* TreePhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TreePhoto.m; sourceTree = "<group>"; };
+		C94B579213A03E8E00F28FD5 /* TreePhotoDownloadController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TreePhotoDownloadController.h; sourceTree = "<group>"; };
+		C94B579313A03E8E00F28FD5 /* TreePhotoDownloadController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TreePhotoDownloadController.m; sourceTree = "<group>"; };
 		C954B0C312FCC62E0042B563 /* RESTConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = RESTConstants.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		C954B0C412FCC62E0042B563 /* RESTConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = RESTConstants.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C95B84D61257E55A00B22E7E /* ASIAuthenticationDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASIAuthenticationDialog.h; sourceTree = "<group>"; };
@@ -308,6 +314,8 @@
 				C987A391124448C500BBFD5B /* Tree.m */,
 				C9D0D9321245024200CE60A9 /* TreeMapAnnotation.h */,
 				C9D0D9331245024200CE60A9 /* TreeMapAnnotation.m */,
+				C94B578F13A0301800F28FD5 /* TreePhoto.h */,
+				C94B579013A0301800F28FD5 /* TreePhoto.m */,
 				C954B0C312FCC62E0042B563 /* RESTConstants.h */,
 				C954B0C412FCC62E0042B563 /* RESTConstants.m */,
 			);
@@ -321,6 +329,8 @@
 				C9D0D9441245072300CE60A9 /* MapViewController.m */,
 				C9155B3F1245AB9500076F95 /* TreeDetailViewController.h */,
 				C9155B401245AB9500076F95 /* TreeDetailViewController.m */,
+				C94B579213A03E8E00F28FD5 /* TreePhotoDownloadController.h */,
+				C94B579313A03E8E00F28FD5 /* TreePhotoDownloadController.m */,
 				C95B85E01258CF7300B22E7E /* PhotoViewController.h */,
 				C95B85E11258CF7300B22E7E /* PhotoViewController.m */,
 				C9C3D551137350EC00C640D1 /* CaptionedImageView.h */,
@@ -505,6 +515,8 @@
 				C95B86681258F35F00B22E7E /* ImageSubmitViewController.m in Sources */,
 				C954B0C512FCC62E0042B563 /* RESTConstants.m in Sources */,
 				C9C3D553137350ED00C640D1 /* CaptionedImageView.m in Sources */,
+				C94B579113A0301800F28FD5 /* TreePhoto.m in Sources */,
+				C94B579413A03E8E00F28FD5 /* TreePhotoDownloadController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

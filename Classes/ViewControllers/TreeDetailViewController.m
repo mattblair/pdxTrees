@@ -49,6 +49,7 @@
 @synthesize image1Button, image2Button, image3Button, image4Button;
 @synthesize fetchingLabel, fetchingSpinner, imageListRequest, imageRequestQueue, selectedPhotoPath;
 @synthesize commonNameLabel, locationNameLabel, notesLabel, heightLabel, circumferenceLabel;
+@synthesize treePhotoDC, photoCount;
 
 // temporary -- for field testing only
 @synthesize usePhotoDownloadController;
@@ -545,6 +546,9 @@
 	fetchingLabel.hidden = NO;
 	fetchingSpinner.hidesWhenStopped = YES;
     
+    // For Testing only -- use a switch or gesture for field-testing
+    self.usePhotoDownloadController = YES;
+    
     [self initPhotoRequests];
 	
 }
@@ -574,6 +578,32 @@
     if (self.usePhotoDownloadController) {
         
         NSLog(@"Use the PhotoDownload Controller");
+        
+        // setup and test PDC
+        
+        self.treePhotoDC = [[TreePhotoDownloadController alloc] initWithTree:self.tree];
+        
+        // override prefetch counts here if desired
+        
+        // add notifications -- come up with better method names
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self 
+                                                 selector:@selector(displayOfflineUI:) 
+                                                     name:kPDCDidLoseInternetConnectionNotification 
+                                                   object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self 
+                                                 selector:@selector(updatePhotoCountAndLabel:) 
+                                                     name:kPDCDidUpdatePhotoCountNotification 
+                                                   object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self 
+                                                 selector:@selector(loadThumbnail:) 
+                                                     name:kPDCDidReceiveThumbnailNotification 
+                                                   object:nil];
+
+        
+        [self.treePhotoDC prefetch];        
         
     }
     
@@ -741,7 +771,7 @@
 				// create requests for iphonescreen images first, to give them a head start
 				// in the future, with larger photos, maybe request the first two screen size images, then thumbnails, then remainder of larger
 				
-				
+				// used to add an index number to userInfo of request, to put it in its slot on arrival
 				NSUInteger treeIndex = 0;
 				
 				for (NSDictionary *treeImage in treeImageList) {
@@ -1050,6 +1080,90 @@
 	
 }
 
+#pragma mark - Handling Notifications from Tree Photo Download Controller
+
+- (void)displayOfflineUI:(NSNotification* )note {
+    
+    self.fetchingLabel.text = @"Images not available.";
+    
+	[self.fetchingSpinner stopAnimating];
+    
+    // set count to 0
+    
+    self.photoCount = 0;
+    
+}
+
+- (void)updatePhotoCountAndLabel:(NSNotification* )note {
+    
+    // turns the value for the count key of the userInfo dictionary into an integer
+    NSUInteger newPhotoCount = [[[note userInfo] objectForKey:@"count"] integerValue];
+    
+    if (newPhotoCount == 0) {
+        
+        // display no images UI
+        self.fetchingLabel.text = @"No photos yet. (Hint, Hint...)";
+        self.fetchingLabel.hidden = NO;
+        
+    }
+    
+    self.photoCount = newPhotoCount;
+    
+}
+
+- (void)loadThumbnail:(NSNotification* )note {
+    
+    // From the note's userInfo dictionary, get the value for thumbnailIndex and convert to an integer
+    NSUInteger newThumbnailIndex = [[[note userInfo] objectForKey:@"thumbnailIndex"] integerValue];
+    
+    if (newThumbnailIndex < 4) { // only need 0-3 for current UI
+        
+        // request the data
+        
+        NSData *thumbnailData = [self.treePhotoDC thumbnailDataForIndex:newThumbnailIndex];
+        
+        // try to convert the data to an image, which returns nil if it's not valid image data 
+        
+        UIImage *thumbnailImage = [[UIImage alloc] initWithData:thumbnailData];
+        
+        if (thumbnailImage) {
+            
+            // set the appropriate button -- via tag? only problem is that the first button's tag is 0
+            // a switch statement would be clearer...
+            
+            if (newThumbnailIndex == 0) {
+                
+                NSLog(@"TDVC: Updating first button...");
+                
+                self.fetchingLabel.hidden = YES;
+                
+                // hide activity view, too?
+                
+                [self.image1Button setImage:thumbnailImage forState:UIControlStateNormal];
+                
+                self.image1Button.hidden = NO;
+            }
+            else {
+                
+                NSLog(@"TDVC: Updating button #%d...", newThumbnailIndex);
+                
+                UIButton *buttonToUpdate = (UIButton *)[self.view viewWithTag:newThumbnailIndex];
+                
+                [buttonToUpdate setImage:thumbnailImage forState:UIControlStateNormal];
+                
+                buttonToUpdate.hidden = NO;
+                
+            }
+            
+            
+        }
+        
+        [thumbnailImage release];
+        
+    }
+    
+}
+
 #pragma mark -
 #pragma mark Memory Management
 
@@ -1067,6 +1181,9 @@
     [super didReceiveMemoryWarning];
     
     // Release any cached data, images, etc that aren't in use.
+    
+    // kill treePhotoDC here?
+    
 }
 
 - (void)viewDidUnload {
@@ -1096,14 +1213,17 @@
 	self.treeThumbnails = nil;
 	
 	self.treePhotos = nil;
-	
-	// NSLog(@"End of viewDidUnload");
+    
+    //[self.treePhotoDC reset];
+    
+    self.treePhotoDC = nil;
 	
 }
 
 
 - (void)dealloc {
 	
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[scientificNameLabel release];
 	[commonNameLabel release];
@@ -1133,6 +1253,7 @@
 	[imageListRequest release];
 	[imageRequestQueue release];
 	
+    [treePhotoDC release];
 	
     [super dealloc];
 }

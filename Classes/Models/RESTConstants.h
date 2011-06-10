@@ -39,6 +39,8 @@ extern NSString * const kAPIHostAndPath;
 extern NSString * const kSubmissionEmailAddress;
 extern NSString * const kEmailFooter;
 
+extern NSString * const kNullThumbnailFilename;
+extern NSString * const kNullPhotoFilename;
 
 // migrating to CouchDB submissions
 
@@ -86,12 +88,16 @@ NSString * const kAPIHostAndPath = @"pdxtrees.org/api/v1/treeimages/";
 // email submissions
 NSString * const kSubmissionEmailAddress = @"admin@pdxtrees.org";
 NSString * const kEmailFooter = @"\n\n\n-----\nSent via the PDX Trees app\nFor more info, visit: http://pdxtrees.org";
- 
+
+
+ // for image failures and delays
+NSString * const kNullThumbnailFilename = @"null-placeholder-50";
+NSString * const kNullPhotoFilename = @"na-placeholder-320"; 
  
 //migrating to Couch
  
-//insecure
-NSString * const kCouchURLForPhotoSubmission = @"http://elsewise.iriscouch.com/pdx_trees_photo_submissions";  // insecure
+
+NSString * const kCouchURLForPhotoSubmission = @"http://elsewise.iriscouch.com/pdx_trees_photo_submissions"; 
 
 
 NSString * const kCouchUsername = @"TBD";

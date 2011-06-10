@@ -40,12 +40,13 @@
 
 @interface PhotoViewController : UIViewController <UIScrollViewDelegate, MFMailComposeViewControllerDelegate> {
 
-	// data
+	// Photo fetching -- to be replaced
 	NSMutableArray *treeImageList;	
 	NSMutableArray *treeThumbnails;
 	NSMutableArray *photoArray;
 	NSMutableArray *treePhotosReceived;
 	
+    // data
 	NSNumber *treeID;
 	NSString *treeName;
     
@@ -53,7 +54,6 @@
     NSMutableSet *visiblePhotos;
 	
 	// UI
-	
 	UIScrollView *scrollView;
 	UIPageControl *pageControl;
 	
@@ -64,18 +64,20 @@
 	
 	NSInteger photoRequestedIndex; // for landing on a particular page
 	
-	// the request objects
+	// the request objects - to be replaced
 	ASIHTTPRequest *flagRequest;
 	ASINetworkQueue *imageRequestQueue;
 
 }
 
-// data
 
+// Photo fetching -- to be replaced
 @property (nonatomic, retain) NSMutableArray *treeImageList;	
 @property (nonatomic, retain) NSMutableArray *treeThumbnails;
 @property (nonatomic, retain) NSMutableArray *photoArray;
 @property (nonatomic, retain) NSMutableArray *treePhotosReceived;
+
+// data
 @property (nonatomic, retain) NSNumber *treeID;
 @property (nonatomic, copy) NSString *treeName;
 
