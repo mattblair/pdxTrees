@@ -160,10 +160,28 @@
 	
 	
     // TESTING ONLY: check usePhotoDownloadController while testing in parallel between the old and new way
+    // No need to integrate because only one will be used in production code
     
     if (self.usePhotoDownloadController) {
         // use the new GalleryViewController
-        NSLog(@"Testing new Gallery VC");
+        NSLog(@"Testing new Gallery VC with Photo Download Controller");
+        
+        [self.treePhotoDC fetchRemainingPhotos]; // no need to bounds check. It does that.
+        
+        PhotoViewController *photoVC = [[PhotoViewController alloc] initWithNibName:@"PhotoViewController" bundle:nil];
+        
+        photoVC.photoCount = self.photoCount;
+        
+        photoVC.treePhotoDC = self.treePhotoDC;
+        
+        photoVC.usePhotoDownloadController = YES; //TEMPORARY
+        
+        // Set page number based on which image is tapped. Button tag set in XIB.
+        photoVC.photoRequestedIndex = [sender tag]; 
+        
+        [self.navigationController pushViewController:photoVC animated:YES];
+        
+        [photoVC release];
 
     }
     
@@ -177,6 +195,9 @@
         photoVC.treeImageList = self.treeImageList;
         
         photoVC.photoArray = self.treePhotos;
+        
+        // Added along with PDC. Lets me switch to only using photoCount in photoVC, instead of array counts.
+        photoVC.photoCount = [self.treePhotos count];
         
         // pass in array of Bools (stored as NSNumbers) so the Photo VC knows which still need to be fetched
         photoVC.treePhotosReceived = self.treePhotosReceived;

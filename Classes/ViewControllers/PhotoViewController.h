@@ -32,6 +32,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "TreePhotoDownloadController.h"
 
 @class ASIHTTPRequest;
 @class ASINetworkQueue;
@@ -40,12 +41,16 @@
 
 @interface PhotoViewController : UIViewController <UIScrollViewDelegate, MFMailComposeViewControllerDelegate> {
 
-	// Photo fetching -- to be replaced
+	// Photo fetching -- the Old Way -- to be replaced
 	NSMutableArray *treeImageList;	
 	NSMutableArray *treeThumbnails;
 	NSMutableArray *photoArray;
 	NSMutableArray *treePhotosReceived;
 	
+    // Photo fetching -- new way
+    TreePhotoDownloadController *treePhotoDC;
+    NSUInteger photoCount;
+    
     // data
 	NSNumber *treeID;
 	NSString *treeName;
@@ -67,6 +72,8 @@
 	// the request objects - to be replaced
 	ASIHTTPRequest *flagRequest;
 	ASINetworkQueue *imageRequestQueue;
+    
+    BOOL usePhotoDownloadController;  // temporary -- for field testing only
 
 }
 
@@ -76,6 +83,12 @@
 @property (nonatomic, retain) NSMutableArray *treeThumbnails;
 @property (nonatomic, retain) NSMutableArray *photoArray;
 @property (nonatomic, retain) NSMutableArray *treePhotosReceived;
+
+// Photo fetching -- new way
+@property (nonatomic, retain) TreePhotoDownloadController *treePhotoDC;
+@property (nonatomic) NSUInteger photoCount;
+
+@property (nonatomic) BOOL usePhotoDownloadController;  // temporary -- for field testing only
 
 // data
 @property (nonatomic, retain) NSNumber *treeID;

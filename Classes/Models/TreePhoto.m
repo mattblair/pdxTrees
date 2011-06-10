@@ -21,7 +21,8 @@
     self = [super init];
     if (self) {
 
-        // other defaults
+        // or status typedef
+        
         thumbnailRequestCompleted = NO;
         photoRequestCompleted = NO;
         

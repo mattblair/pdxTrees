@@ -6,6 +6,7 @@
 //  Copyright 2011 Elsewise LLC. All rights reserved.
 //
 
+// use this to reflect state, instead of two BOOLS?
 typedef enum EWAPhotoDownloadStatusType { 
     EWAPhotoDownloadUnrequested = 0,
     EWAPhotoDownloadFetching,
@@ -18,7 +19,7 @@ typedef enum EWAPhotoDownloadStatusType {
 
 @interface TreePhoto : NSObject {
     
-    //Tree *theTree; // does each one need a tree reference?
+    //Tree *theTree; // does each one need a tree reference? probably not
     
     NSString *thumbnailURL;
     NSString *photoURL;
@@ -29,7 +30,7 @@ typedef enum EWAPhotoDownloadStatusType {
     NSData *thumbnailData;
     NSData *photoData;
     
-    // or instead of two BOOLs, use a type def that can handle the whole workflow?
+    // or instead of two BOOLs, use a typedef that can handle the whole workflow?
     // Unrequested - > Fetching -> RequestSucceeded | RequestFailed 
     
     BOOL thumbnailRequestCompleted; 
@@ -39,8 +40,6 @@ typedef enum EWAPhotoDownloadStatusType {
     BOOL photoRequestSucceeded;
         
 }
-
-//@property(nonatomic, retain) Tree *theTree;
 
 @property(nonatomic, copy) NSString *thumbnailURL;
 @property(nonatomic, copy) NSString *photoURL;

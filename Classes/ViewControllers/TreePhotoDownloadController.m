@@ -19,7 +19,7 @@ NSString * const kPDCDidLoseInternetConnectionNotification = @"PDCDidLoseInterne
 NSString * const kPDCDidUpdatePhotoCountNotification = @"PDCDidUpdatePhotoCountNotification";
 NSString * const kPDCDidReceiveThumbnailNotification = @"PDCDidReceiveThumbnailNotification";
 
-// might get rid of these
+// might not use these
 NSString * const kPDCDidReceivePhotoNotification = @"PDCDidReceivePhotoNotification";
 NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotification";
 
@@ -27,7 +27,7 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 
 @implementation TreePhotoDownloadController
 
-@synthesize theTree, imagesAvailable;
+@synthesize theTree;
 @synthesize thumbnailPrefetchCount, photoPrefetchCount;
 @synthesize prefetching, fetching;
 @synthesize photoListRequest, photoRequestQueue;
@@ -45,6 +45,9 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         thumbnailPrefetchCount = 4;
         photoPrefetchCount = 2;
         
+        prefetching = NO;
+        fetching = NO;
+        
         // determine locations of these one time? Does this make sense?
         
         nullThumbnailPath = [[NSBundle mainBundle] pathForResource:kNullThumbnailFilename ofType:@"jpg"];
@@ -60,15 +63,15 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 - (void)reset {
     
     // prepare for release, if needed
+    // I think you can do everything in dealloc, though you might want to call killQueue here?
     
-    self.imagesAvailable = YES;
-    
-    // if offline, notify or call delegate method
 }
 
 - (void)dealloc {
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    // call killQueue here?
     
     [theTree release];
     
@@ -87,13 +90,71 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 
 - (void)prefetch { 
     
-    // check for Reachability first
-    
+    // If you don't need to do anything else here, 
+    // just have other objects call requestPhotoList directly
     [self requestPhotoList];
     
 }
 
 - (void)fetchRemainingPhotos {
+    
+    // check to see if there are more photos
+    if ([self count] > photoPrefetchCount) {
+    
+        // wasteful to cancel? But what if last one arrives and queue closes while we're preparing more requests?
+        //[self.photoRequestQueue cancelAllOperations];
+    
+        // shouldn't need this, because I'm not setting it to nil until dealloc
+        /*
+        if (!self.photoRequestQueue) {
+            // re-init it
+        }
+        */
+        
+        NSUInteger treeIndex = 0;
+        
+        for (TreePhoto *theTreePhoto in self.treePhotoArray) {
+            
+            // skip over the ones that already have requests
+            if (treeIndex >= photoPrefetchCount) {
+                
+                // should check for photoRequestSucceeded = NO before creating
+                
+                NSURL *url = nil;
+                ASIHTTPRequest *request = nil;
+                
+                url = [NSURL URLWithString:[theTreePhoto photoURL]];
+                //NSLog(@"Requesting: %@", url);
+                request = [ASIHTTPRequest requestWithURL:url];
+                [request setDelegate:self];
+                request.userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    @"iphonescreen", @"requestType", 
+                                    [NSNumber numberWithInt:treeIndex], @"index", 
+                                    nil];
+                [request setDidFinishSelector:@selector(photoRequestFinished:)];
+                [request setDidFailSelector:@selector(photoRequestFailed:)];
+                [self.photoRequestQueue addOperation:request];
+                
+            }
+            
+            treeIndex++;
+            
+        }
+        
+        // docs say you don't need to call go again, but what if it has finished?
+        // is there a way to check whether queue is active? It works in sim
+        
+        self.fetching = YES;
+    }
+    
+    else {
+        
+        NSLog(@"All available photos requested during prefetch phase");
+        
+        self.fetching = NO;
+        
+    }
+    
     
 }
 
@@ -197,6 +258,8 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
     
     if (status == kReachableViaWiFi || status == kReachableViaWWAN) { 
         
+        self.prefetching = YES;
+        
         [[NSNotificationCenter defaultCenter] addObserver:self 
                                                  selector:@selector(reachabilityChanged:) 
                                                      name:kReachabilityChangedNotification 
@@ -206,7 +269,9 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         
         // send notification that request is starting so TDVC can upate UI?
         
-        NSString *urlString = [NSString stringWithFormat:@"http://%@:%@@%@%d/iphonescreen/", kAPIUsername,kAPIPassword,kAPIHostAndPath, [self.theTree.treeID integerValue]];
+        NSString *urlString = [NSString stringWithFormat:@"http://%@:%@@%@%d/iphonescreen/", 
+                               kAPIUsername,kAPIPassword,kAPIHostAndPath, 
+                               [self.theTree.treeID integerValue]];
         
         NSLog(@"PDC: Generated Photo Request URL is: %@", urlString);
         
@@ -228,8 +293,8 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         NSLog(@"PDC: Image List Request won't be made because internet is not available.");
         
         // send notification for UI updates
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:kPDCDidLoseInternetConnectionNotification object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kPDCDidLoseInternetConnectionNotification 
+                                                            object:self];
     }
     
 }
@@ -238,7 +303,7 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
     
     NSString *responseString = [request responseString];
     
-    // TESTING
+    // TESTING ONLY
     NSLog(@"The Image List Request HTTP Status code was: %d", [request responseStatusCode]);
 	NSLog(@"The response for the Image List Request was: %@", responseString);
 	
@@ -255,7 +320,7 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 				
 				NSLog(@"first dictionary item in temp tree image list: %@", [tempImageList objectAtIndex:0]);
 				
-                // For Django API, each image dictionary will look like:
+                // With Django API, each image dictionary will look like:
                 
                 /*
                 
@@ -270,20 +335,22 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
                 }
 
                 */
-                
-                
-                // delete
-				//self.treeImageList = tempImageList;
-				//NSUInteger imageCount = [[self treeImageList] count];
 				
-				// setup array
+                // send notification of photo count
+                NSDictionary *infoDict = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:[tempImageList count]] 
+                                                                     forKey:@"count"];
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:kPDCDidUpdatePhotoCountNotification 
+                                                                    object:self
+                                                                  userInfo:infoDict];
+                
 				
+                
                 self.treePhotoArray = [[NSMutableArray alloc] initWithCapacity:[tempImageList count]];
-                
                 
                 for (NSDictionary *imageDict in tempImageList) {
                     
-                    // init a TreePhoto 
+                    // init a TreePhoto for each
                     
                     TreePhoto *newTreePhoto = nil;
                     
@@ -296,25 +363,24 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
                     // pending API availability
                     //newTreePhoto.credit = [imageDict valueForKey:@"credit"];
                     
-                    // add it to the array
                     [self.treePhotoArray addObject:newTreePhoto];
-                    
-                    // release
-                    
+                                        
                     [newTreePhoto release];
                     
                 }
 				
-				
-                self.photoRequestQueue = [[ASINetworkQueue alloc] init]; // autorelease here if queueFinished doesn't work
+                
+				// init and populate the queue
+                
+                self.photoRequestQueue = [[ASINetworkQueue alloc] init];
                 
 				self.photoRequestQueue.delegate = self;
-				
+                
+                [self.photoRequestQueue setQueueDidFinishSelector:@selector(queueFinished:)];
+                
                 // could consolidate this loop with enumeration above, 
-                // but it seems logically cleaner to me to init TreePhoto objects, then create request queue
-                // and they are short loops
-				
-                // populate the queue
+                // but it seems logically cleaner to me to init TreePhoto objects, 
+                // then create request queue -- and they are short loops.
 				
                 NSUInteger index = 0;
                 
@@ -380,6 +446,8 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         
 		else { // no images
             
+            self.prefetching = NO;
+            
             NSDictionary *infoDict = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:0] forKey:@"count"];
             
             [[NSNotificationCenter defaultCenter] postNotificationName:kPDCDidUpdatePhotoCountNotification 
@@ -406,6 +474,8 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
     
     
     // reset self, including setting count to 0
+    
+    self.prefetching = NO;
     
     // notify that there will be no images    
     NSDictionary *infoDict = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:0] forKey:@"count"];
@@ -437,8 +507,6 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         [relatedTreePhoto setThumbnailData:[request responseData]];
         
         [relatedTreePhoto setThumbnailRequestSucceeded:YES];
-        
-		//[treeThumbnails replaceObjectAtIndex:thumbIndex withObject:[UIImage imageWithData:responseData]];
 		
 		// send notification
         // include index, but not data. Let receivers request data if they actually want it.
@@ -458,7 +526,7 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 		NSLog(@"The data returned was %d bytes and looks like: %@", 
               [[request responseData] length], [request responseData]);
         
-        // need to send notification? Or no?
+        // need to send notification? Or not needed?
 		
 	}
     
@@ -479,6 +547,9 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
   
 -(void)photoRequestFinished:(ASIHTTPRequest *)request {
     
+    // TESTING ONLY
+    NSLog(@"PDC's queue has %d remaining requests.", [self.photoRequestQueue requestsCount]);
+    
     NSUInteger photoIndex = [[[request userInfo] objectForKey:@"index"] intValue];
     
     TreePhoto *relatedTreePhoto = [self.treePhotoArray objectAtIndex:photoIndex];
@@ -493,7 +564,9 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         [relatedTreePhoto setPhotoData:[request responseData]];
         [relatedTreePhoto setPhotoRequestSucceeded:YES];
 		
-		// send notification
+        NSLog(@"PDC received photo #%d", photoIndex);
+        
+		// send notification?
 		
 	}
 	else {  //bad response
@@ -544,11 +617,15 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 	
     NSLog(@"Queue finished");
     
-    // Verify, since this method doesn't seem consistently called
+    // only set it to nil if the fetching phase is somplete
+    /*
 	if ([[self photoRequestQueue] requestsCount] == 0) {
 		self.photoRequestQueue = nil;
 	}
-	
+	*/
+    self.prefetching = NO;
+    self.fetching = NO;
+    
 	// notification to update UI?
 	
 }
@@ -559,7 +636,7 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 	// to be called on loss of network availability or if owning object shuts it down
 	
 	if ([self.photoRequestQueue requestsCount] > 0 ) {
-        [[self photoRequestQueue] cancelAllOperations];
+        [self.photoRequestQueue reset]; // was cancelAllOperations, but reset is more comprehensive
     }
 	
 	// so that the rest of the requests don't keep calling the failed methods
@@ -580,7 +657,8 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 		[self killQueue];
         
 		// send notification
-        [[NSNotificationCenter defaultCenter] postNotificationName:kPDCDidLoseInternetConnectionNotification object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kPDCDidLoseInternetConnectionNotification 
+                                                            object:self];
 		
 	}
 	

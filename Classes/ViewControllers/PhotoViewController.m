@@ -50,7 +50,8 @@
 @implementation PhotoViewController
 
 @synthesize scrollView, pageControl, flagRequest, imageRequestQueue;
-@synthesize treeImageList, treeThumbnails, photoArray, treePhotosReceived, treeID, treeName;
+@synthesize treeImageList, treeThumbnails, photoArray, treePhotosReceived, treeID, treeName; // old way
+@synthesize treePhotoDC, photoCount, usePhotoDownloadController; // new way
 @synthesize photoRequestedIndex;
 
 
@@ -75,75 +76,83 @@
 
     // BEGIN DEMOLITION AREA (for image requests, that is)
     
+    // For testing, only run this if you aren't use PDC
     
-	// start requests for images here, based on treeImageList
-
-	// create request queue if it doesn't exist yet
+    if (!self.usePhotoDownloadController) {
+        // start requests for images here, based on treeImageList
+        
+        // create request queue if it doesn't exist yet
+        
+        if (![self imageRequestQueue]) {
+            [self setImageRequestQueue:[[[ASINetworkQueue alloc] init] autorelease]];
+        }
+        
+        self.imageRequestQueue.delegate = self;
+        
+        NSUInteger photoIndex = 0;
+        
+        for (NSDictionary *treeImage in treeImageList) {
+            
+            // check treePhotosReceived
+            
+            BOOL photoReceived = [[[self treePhotosReceived] objectAtIndex:photoIndex] boolValue];
+            
+            /*
+             if (photoReceived) {
+             NSLog(@"Already have photo for index %d", photoIndex);
+             }
+             else {
+             NSLog(@"Need to fetch photo for index %d", photoIndex);
+             }
+             */
+            
+            
+            if (!photoReceived) {  // request only those not received yet
+                NSURL *url = nil;
+                ASIHTTPRequest *request = nil;
+                
+                url = [NSURL URLWithString:[treeImage valueForKey:@"image"]];
+                // NSLog(@"Requesting: %@", url);
+                request = [ASIHTTPRequest requestWithURL:url];
+                [request setDelegate:self];
+                request.userInfo = [NSDictionary dictionaryWithObjectsAndKeys:@"iphonescreen", @"requestType", [NSNumber numberWithInt:photoIndex], @"index", nil];
+                [request setDidFinishSelector:@selector(photoRequestFinished:)];
+                [request setDidFailSelector:@selector(photoRequestFailed:)];
+                [[self imageRequestQueue] addOperation:request];
+            }
+            
+            
+            
+            photoIndex++;
+            
+            // Open this up in future versions, pending more extensive memory testing.
+            if (photoIndex >= 6) {
+                break;
+            }
+        }
+        
+        
+        // only start the queue if there are actually images to fetch.
+        if ([[self imageRequestQueue] requestsCount] > 0) {
+            // start the queue
+            // NSLog(@"Starting queue");				
+            [[self imageRequestQueue] go];
+        }
+        
+        // END DEMOLITION AREA
+    }
+    
 	
-	if (![self imageRequestQueue]) {
-		[self setImageRequestQueue:[[[ASINetworkQueue alloc] init] autorelease]];
-	}
-	
-	self.imageRequestQueue.delegate = self;
-	
-	NSUInteger photoIndex = 0;
-	
-	for (NSDictionary *treeImage in treeImageList) {
-		
-		// check treePhotosReceived
-		
-		BOOL photoReceived = [[[self treePhotosReceived] objectAtIndex:photoIndex] boolValue];
-		
-		/*
-		if (photoReceived) {
-			NSLog(@"Already have photo for index %d", photoIndex);
-		}
-		else {
-			NSLog(@"Need to fetch photo for index %d", photoIndex);
-		}
-		*/
-
-		
-		if (!photoReceived) {  // request only those not received yet
-			NSURL *url = nil;
-			ASIHTTPRequest *request = nil;
-			
-			url = [NSURL URLWithString:[treeImage valueForKey:@"image"]];
-			// NSLog(@"Requesting: %@", url);
-			request = [ASIHTTPRequest requestWithURL:url];
-			[request setDelegate:self];
-			request.userInfo = [NSDictionary dictionaryWithObjectsAndKeys:@"iphonescreen", @"requestType", [NSNumber numberWithInt:photoIndex], @"index", nil];
-			[request setDidFinishSelector:@selector(photoRequestFinished:)];
-			[request setDidFailSelector:@selector(photoRequestFailed:)];
-			[[self imageRequestQueue] addOperation:request];
-		}
-		
-
-		
-		photoIndex++;
-		
-		// Open this up in future versions, pending more extensive memory testing.
-		if (photoIndex >= 6) {
-			break;
-		}
-	}
-	
-	
-	// only start the queue if there are actually images to fetch.
-	if ([[self imageRequestQueue] requestsCount] > 0) {
-		// start the queue
-		// NSLog(@"Starting queue");				
-		[[self imageRequestQueue] go];
-	}
-
-    // END DEMOLITION AREA
     
     
     
     // Photo Display code
 	
 	// get count of photos
-	NSUInteger pageCount = [[self photoArray] count];
+	//NSUInteger pageCount = [[self photoArray] count];
+    // or just use self.photoCount directly now?
+    //NSUInteger pageCount = self.photoCount; 
+    
     
     // sets to hold the views
     recycledPhotos = [[NSMutableSet alloc] init];
@@ -154,13 +163,13 @@
 	
 	// a page is the width of the scroll view
     scrollView.pagingEnabled = YES;
-    scrollView.contentSize = CGSizeMake(scrollView.frame.size.width * pageCount, scrollView.frame.size.height);
+    scrollView.contentSize = CGSizeMake(scrollView.frame.size.width * self.photoCount, scrollView.frame.size.height);
     scrollView.showsHorizontalScrollIndicator = NO;
     scrollView.showsVerticalScrollIndicator = NO;
     scrollView.scrollsToTop = NO;
     scrollView.delegate = self;
 	
-	pageControl.numberOfPages = pageCount;
+	pageControl.numberOfPages = self.photoCount;
     
     
     // pre-fetch images before and after requested photo
@@ -269,15 +278,32 @@
     
     // bounds check -- get rid of this and check elsewhere?
     if (page < 0) return;
-    if (page >= [[self photoArray] count]) return;
     
+    //if (page >= [[self photoArray] count]) return;
+    if (page >= self.photoCount) return;
     
-    NSString *pageCaption = [[treeImageList objectAtIndex:page] objectForKey:@"caption"];
-    
+    // moved above pageCaption string, which shouldn't have any side effects
     capView.index = page;
     
-    // page = index -- rename the argument in the method to make it clearer?
-    [capView displayImage:[photoArray objectAtIndex:page] withCaption:pageCaption andCredit:@"TBD"];
+    if (self.usePhotoDownloadController) {
+        
+        TreePhoto *thisTreePhoto = [self.treePhotoDC treePhotoForIndex:page];
+        
+        // treePhotoDC subs in the placeholder if the image hasn't arrived
+        // What about a bad image? Should you nil test first and sub in placeholder here, too?
+        [capView displayImage:[UIImage imageWithData:[thisTreePhoto photoData]] 
+                  withCaption:[thisTreePhoto caption] 
+                    andCredit:[thisTreePhoto credit]];
+        
+    }
+    else { // the old way
+        NSString *pageCaption = [[treeImageList objectAtIndex:page] objectForKey:@"caption"];
+        
+        // page = index -- rename the argument in the method to make it clearer?
+        [capView displayImage:[photoArray objectAtIndex:page] withCaption:pageCaption andCredit:@"TBD"];
+    }
+    
+    
     
     CGRect frame = scrollView.frame;
     frame.origin.x = frame.size.width * page;
@@ -296,7 +322,8 @@
     
     // bounds handling from tilePages
     firstPhotoNeeded = MAX(firstPhotoNeeded, 0); // i.e. filter out negative
-    lastPhotoNeeded  = MIN(lastPhotoNeeded, [[self photoArray] count] - 1);
+    //lastPhotoNeeded  = MIN(lastPhotoNeeded, [[self photoArray] count] - 1);
+    lastPhotoNeeded  = MIN(lastPhotoNeeded, self.photoCount - 1);
     
     
     NSLog(@"Current views needed are indexes: %d %d %d", firstPhotoNeeded, page, lastPhotoNeeded);
@@ -717,6 +744,8 @@
     self.scrollView = nil;
     self.pageControl = nil;
     
+    self.treePhotoDC = nil;
+    
 }
 
 
@@ -725,16 +754,18 @@
     [scrollView release];
     [pageControl release];
 	
+    // old fetching way
 	[treeImageList release];
 	[treeThumbnails release];
 	[photoArray release];
 	[treePhotosReceived release];
-	
 	[treeID	release];
 	[treeName release];
-	
-	[flagRequest release];
 	[imageRequestQueue release];
+    
+	[flagRequest release];
+    
+    [treePhotoDC release];
 	
     [super dealloc];
 }
