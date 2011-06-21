@@ -568,7 +568,8 @@
 	fetchingSpinner.hidesWhenStopped = YES;
     
     // For Testing only -- use a switch or gesture for field-testing
-    self.usePhotoDownloadController = YES;
+    // let Map VC drive this instead
+    //self.usePhotoDownloadController = YES;
     
     [self initPhotoRequests];
 	

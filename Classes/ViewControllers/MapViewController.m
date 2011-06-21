@@ -334,7 +334,9 @@
     else  {
 		
 		tdvc.tree = [fetchedItems objectAtIndex:0];
-        tdvc.usePhotoDownloadController = NO;       // this is a switch for testing, once it's been implemented
+        
+        // add UISwitch somewhere for field testing?
+        tdvc.usePhotoDownloadController = YES;
 			
 		[self.navigationController pushViewController:tdvc animated:YES];
 			
