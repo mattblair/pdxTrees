@@ -1,0 +1,37 @@
+Terms of Use for the City of Portland’s contribution to the Open Data Catalog
+
+I. Introduction
+
+The City of Portland is committed to providing our constituents (“You”) with free and open access to information. The City of Portland (“City”) has contributed to the new Portland Regional Open Data Catalog (“Data”) website for your use and enjoyment. The following Terms of Use (“Terms”) apply.
+
+The City’s Portland regional Open Data Catalog provides data for Your convenience and makes Data available for download through this website. Your use of the Data is subject to these Terms, which constitute a legal agreement between You and the City. This legal agreement is referred to as the "Terms of Use."
+
+II. Accepting the terms of use
+
+In order to access or use the Data, You must agree to these Terms. You agree to the Terms by either: (1) Clicking to accept the Terms of Use; or (2) Downloading, accessing or using the Data or any Derivative Work, in which case You understand and agree that the City will consider Your download or use of the Data or a Derivative Work as an acceptance of the Terms.
+
+III. Definitions
+
+"Data" means the City of Portland’s open data that is available for download through the Portland regional Open Data Catalog on the City's website [http://data.civicapps.org] and includes any future updates to that data.
+
+"Derivative Work" means a work that is based in any way or to any extent on the Data including without limitation any work that uses the Data in a modified form.
+
+"You" means any individual or entity that seeks to use, access, or download the Data.
+
+IV. City's intellectual property rights
+
+You acknowledge and agree that the City retains all right, title and interest in the Data, and in all copies or Derivative Works prepared by You. These Terms do not grant You any title or right to any patent, copyright, or other intellectual property rights that the City may have in the Data.
+
+You agree to indemnify, defend and hold harmless the City, its agents, officers, directors and employees for Your misuse of the Data, including any copyright or other intellectual property infringement.
+
+V. Exclusion of warranty, limitation of liability
+
+THE DATA ACCESSED THROUGH THIS WEB SITE PROVIDES DATA FOR YOUR CONVENIENCE ONLY. EVERY REASONABLE EFFORT HAS BEEN MADE TO ASSURE THE ACCURACY OF THE DATA. THE CITY OF PORTLAND MAKES NO WARRANTY, REPRESENTATION OR GUARANTEE AS TO THE CONTENT, SEQUENCE, ACCURACY, TIMELINESS OR COMPLETENESS OF ANY OF THE DATA PROVIDED HEREIN. THE USER OF THESE APPLICATIONS SHOULD NOT RELY ON THE DATA PROVIDED HEREIN FOR ANY REASON. THE CITY OF PORTLAND EXPLICITLY DISCLAIMS ANY REPRESENTATIONS AND WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE CITY OF PORTLAND SHALL ASSUME NO LIABILITY FOR ANY ERRORS, OMISSIONS, OR INACCURACIES IN THE INFORMATION PROVIDED REGARDLESS OF HOW CAUSED, EVEN IF THE CITY HAD BEEN NOTIFIED OF SUCH. THE CITY OF PORTLAND SHALL ASSUME NO LIABILITY FOR ANY DECISIONS MADE OR ACTIONS TAKEN OR NOT TAKEN BY THE USER OF THE APPLICATIONS IN RELIANCE UPON ANY INFORMATION OR DATA FURNISHED HEREUNDER.
+
+VI. General Provisions
+
+A. No guaranteed availability. The City of Portland reserves the right at any time, and from time to time, to modify or discontinue the availability of the Data (or any part thereof), temporarily or permanently, with or without notice to You. You agree that City of Portland will not be liable to You for any modification, suspension or discontinuance of the Data.
+
+B. The City reserves the right to release the Data under different Terms.
+
+By clicking this button below, I accept all the terms of this agreement
