@@ -30,9 +30,9 @@
 // This class simply fetches, holds and hands out chunks of data that should 
 // represent photos. It makes no promises about the validity of the image. 
 // This is to delay uncompressing image data as long as possible, so that images
-// never presented in the UI don't take up memory.
+// never presented in the UI don't take up as much memory.
 //
-// The presenting VC should check for validity before preseting in UI. 
+// The requesting VC should check for validity before presenting in UI. 
 // An easy solution: the imageWithData: class method of UIImage returns nil if 
 // it can't create an image with the NSData object provided. Test that for nil.
 //

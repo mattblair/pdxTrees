@@ -1,12 +1,17 @@
 # PDX Trees for iOS
 
-Last updated: 2011-06-22
+Last updated: 2011-06-24
 
 About the project: [PDX Trees](http://pdxtrees.org)
 
 The latest release is available on the [App Store](http://itunes.apple.com/us/app/pdx-trees/id397678249?mt=8).
 
-I'll add more details soon.
+## Running the app
+
+There are a few image files that are gitignored for licensing reasons, and the RESTConstants.m file is gitignored because it has passwords in it. At some point, I'll probably add a build script to copy/create these files automatically if they don't exist. For now, here's how to fix/avoid build errors:
+
+* Make copies of the lower-resolution image files, and rename them based on the @2x convention used for Retina-scale images.
+* Create a RESTConstants.m file, using the template in the RESTConstants.h file. At the moment, you do still need an account to access photo info, but not the actual photos. This will change soon when I migrate to CouchDB. Until then, if you want an account, email me and I'll send you one. 
 
 ## Roadmap
 
