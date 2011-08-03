@@ -64,8 +64,8 @@ extern NSString * const kPDCDidRequestListNotification; //so TDVC could update U
     NSUInteger thumbnailPrefetchCount;
     NSUInteger photoPrefetchCount;
     
-    NSString *nullThumbnailPath;
-    NSString *nullPhotoPath;
+    NSString *nullTreeThumbnailPath;
+    NSString *nullTreePhotoPath;
     
     NSMutableArray *treePhotoArray;
     
@@ -91,6 +91,9 @@ extern NSString * const kPDCDidRequestListNotification; //so TDVC could update U
 
 @property(retain) ASIHTTPRequest *photoListRequest;
 @property(retain) ASINetworkQueue *photoRequestQueue;
+
+@property(nonatomic, copy) NSString *nullTreeThumbnailPath;
+@property(nonatomic, copy) NSString *nullTreePhotoPath;
 
 @property(nonatomic, retain) NSMutableArray *treePhotoArray;
 

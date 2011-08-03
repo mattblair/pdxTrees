@@ -31,6 +31,7 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
 @synthesize thumbnailPrefetchCount, photoPrefetchCount;
 @synthesize prefetching, fetching;
 @synthesize photoListRequest, photoRequestQueue;
+@synthesize nullTreeThumbnailPath, nullTreePhotoPath;
 @synthesize treePhotoArray;
 
 #pragma mark - Object Lifecycle
@@ -50,9 +51,13 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         
         // determine locations of these one time? Does this make sense?
         
-        nullThumbnailPath = [[NSBundle mainBundle] pathForResource:kNullThumbnailFilename ofType:@"jpg"];
+        self.nullTreeThumbnailPath = [[NSBundle mainBundle] pathForResource:kNullThumbnailFilename ofType:@"jpg"];
         
-        nullPhotoPath = [[NSBundle mainBundle] pathForResource:kNullPhotoFilename ofType:@"jpg"];
+        NSAssert(nullTreeThumbnailPath, @"nullTreeThumbnailPath is not valid");
+        
+        self.nullTreePhotoPath = [[NSBundle mainBundle] pathForResource:kNullPhotoFilename ofType:@"jpg"];
+        
+        NSAssert(nullTreePhotoPath, @"nullTreePhotoPath is not valid");
         
     }
     
@@ -75,8 +80,8 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
     
     [theTree release];
     
-    [nullThumbnailPath release];
-    [nullPhotoPath release];
+    [nullTreeThumbnailPath release];
+    [nullTreePhotoPath release];
     
     [photoListRequest release];
     [photoRequestQueue release];
@@ -183,7 +188,7 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         }
         else {
             
-            NSData *thumbData = [NSData dataWithContentsOfFile:nullThumbnailPath];
+            NSData *thumbData = [NSData dataWithContentsOfFile:nullTreeThumbnailPath];
             return thumbData;
             
         }
@@ -206,11 +211,11 @@ NSString * const kPDCDidRequestListNotification = @"PDCDidRequestListNotificatio
         // should inject placeholder data if images aren't here yet
         
         if (!requestedTreePhoto.photoRequestSucceeded) {
-            requestedTreePhoto.photoData = [NSData dataWithContentsOfFile:nullPhotoPath];
+            requestedTreePhoto.photoData = [NSData dataWithContentsOfFile:self.nullTreePhotoPath];
         }
         
         if (!requestedTreePhoto.thumbnailRequestSucceeded) {
-            requestedTreePhoto.thumbnailData = [NSData dataWithContentsOfFile:nullThumbnailPath];
+            requestedTreePhoto.thumbnailData = [NSData dataWithContentsOfFile:self.nullTreeThumbnailPath];
         }
         
         return requestedTreePhoto;
